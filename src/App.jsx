@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import Header from './components/Header'
+import Sidebar from './components/Sidebar'
 import Step1Greeting from './components/Step1Greeting'
 import Step2FollowUp from './components/Step2FollowUp'
 import Step3Generating from './components/Step3Generating'
@@ -32,8 +33,9 @@ function savePersisted(step, guide) {
 }
 
 function AppContent() {
-  const { user } = useAuth()
-  const [view, setView] = useState('main') // 'main' | 'saved'
+  const { user, authError, clearAuthError } = useAuth()
+  const [view, setView] = useState('main')
+  const [selectedSaved, setSelectedSaved] = useState(null) // { id, projectIdea, guide } when viewing a saved project
   const [step, setStep] = useState(STEPS.greeting)
   const [projectIdea, setProjectIdea] = useState('')
   const [answers, setAnswers] = useState({ dimensions: '', materialsAccess: '', experienceLevel: '' })
@@ -41,6 +43,8 @@ function AppContent() {
   const [guide, setGuide] = useState(null)
   const [error, setError] = useState(null)
   const [currentGuideSaved, setCurrentGuideSaved] = useState(false)
+  const [savedListVersion, setSavedListVersion] = useState(0)
+  const [sidebarOpen, setSidebarOpen] = useState(true)
 
   useEffect(() => {
     const saved = loadPersisted()
@@ -114,47 +118,98 @@ function AppContent() {
     try {
       await saveProject(user.uid, idea, guideData)
       setCurrentGuideSaved(true)
+      setSavedListVersion((v) => v + 1)
     } catch (err) {
       console.error(err)
     }
   }
 
-  const handleOpenSaved = () => setView('saved')
-  const handleBackToMain = () => setView('main')
+  const handleNewProject = () => {
+    setSelectedSaved(null)
+    setView('main')
+    setStep(STEPS.greeting)
+    setProjectIdea('')
+    setAnswers({ dimensions: '', materialsAccess: '', experienceLevel: '' })
+    setMedia([])
+    setGuide(null)
+    setError(null)
+    setCurrentGuideSaved(false)
+    savePersisted(STEPS.guide, null)
+  }
+  const handleSelectSavedProject = (project) => setSelectedSaved(project)
 
   return (
-    <div className="min-h-screen bg-white">
-      <Header onOpenSaved={handleOpenSaved} currentView={view} />
-      <main className="mx-auto max-w-2xl px-4 py-10 sm:px-6 sm:py-14">
-        {view === 'saved' ? (
-          <SavedProjects onStartNew={handleBackToMain} />
-        ) : (
-          <>
-            {step === STEPS.greeting && (
-              <Step1Greeting onSubmit={handleProjectSubmit} />
-            )}
-            {step === STEPS.followUp && (
-              <Step2FollowUp
-                projectIdea={projectIdea}
-                initialAnswers={answers}
-                initialMedia={media}
-                onSubmit={handleFollowUpSubmit}
-                error={error}
-              />
-            )}
-            {step === STEPS.generating && <Step3Generating />}
-            {step === STEPS.guide && guide && (
-              <Step4Guide
-                guide={guide}
-                projectIdea={projectIdea}
-                onStartOver={handleStartOver}
-                onSave={user ? handleSaveGuide : undefined}
-                isSaved={currentGuideSaved}
-              />
-            )}
-          </>
+    <div className="flex min-h-screen bg-white">
+      {user && sidebarOpen && (
+        <Sidebar
+          selectedProjectId={selectedSaved?.id}
+          onSelectProject={handleSelectSavedProject}
+          onClose={() => setSidebarOpen(false)}
+          refreshTrigger={savedListVersion}
+        />
+      )}
+      <div className="flex min-w-0 flex-1 flex-col">
+        <Header
+          onOpenSaved={() => setView('saved')}
+          currentView={view}
+          hasSidebar={!!user}
+          sidebarOpen={sidebarOpen}
+          onToggleSidebar={() => setSidebarOpen((o) => !o)}
+        />
+        {authError && (
+          <div className="bg-amber-100 border-b border-amber-300 px-4 py-3 text-amber-900">
+            <div className="mx-auto flex max-w-2xl items-center justify-between gap-4">
+              <p className="font-medium">Sign-in issue: {authError}</p>
+              <button
+                type="button"
+                onClick={clearAuthError}
+                className="shrink-0 rounded px-2 py-1 text-sm font-medium hover:bg-amber-200"
+              >
+                Dismiss
+              </button>
+            </div>
+          </div>
         )}
-      </main>
+        <main className="flex-1 overflow-auto bg-neutral-50/30">
+          {selectedSaved ? (
+            <div className="mx-auto max-w-2xl px-4 py-10 sm:px-6 sm:py-14">
+              <Step4Guide
+                guide={selectedSaved.guide}
+                onStartOver={handleNewProject}
+              />
+            </div>
+          ) : view === 'saved' ? (
+            <div className="mx-auto max-w-2xl px-4 py-10 sm:px-6 sm:py-14">
+              <SavedProjects onStartNew={() => setView('main')} />
+            </div>
+          ) : (
+            <div className="mx-auto max-w-2xl px-4 py-10 sm:px-6 sm:py-14">
+              {step === STEPS.greeting && (
+                <Step1Greeting onSubmit={handleProjectSubmit} />
+              )}
+              {step === STEPS.followUp && (
+                <Step2FollowUp
+                  projectIdea={projectIdea}
+                  initialAnswers={answers}
+                  initialMedia={media}
+                  onSubmit={handleFollowUpSubmit}
+                  error={error}
+                />
+              )}
+              {step === STEPS.generating && <Step3Generating />}
+              {step === STEPS.guide && guide && (
+                <Step4Guide
+                  guide={guide}
+                  projectIdea={projectIdea}
+                  onStartOver={handleStartOver}
+                  onSave={user ? handleSaveGuide : undefined}
+                  isSaved={currentGuideSaved}
+                />
+              )}
+            </div>
+          )}
+        </main>
+      </div>
     </div>
   )
 }

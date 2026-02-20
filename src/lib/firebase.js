@@ -11,8 +11,14 @@ const config = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID,
 }
 
-const hasFirebase = config.projectId && config.apiKey
-const app = hasFirebase ? initializeApp(config) : null
+let app = null
+if (config.projectId && config.apiKey) {
+  try {
+    app = initializeApp(config)
+  } catch (err) {
+    console.warn('Firebase init failed (app will work without sign-in):', err?.message || err)
+  }
+}
 export const auth = app ? getAuth(app) : null
 export const db = app ? getFirestore(app) : null
 export const googleProvider = new GoogleAuthProvider()

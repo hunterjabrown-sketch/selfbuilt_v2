@@ -27,16 +27,17 @@ AI-powered DIY home improvement assistant. Describe your project, answer a few q
 
 1. Create a project at [Firebase Console](https://console.firebase.google.com/).
 2. Enable **Authentication** → Sign-in method → **Google**.
-3. Create a **Firestore Database** (start in test mode or set rules so only authenticated users can read/write their own `projects` docs).
-4. In Project settings → General, copy your app’s config and add to `.env`:
+3. **Add your app’s domain so sign-in works:** Authentication → Settings → **Authorized domains** → Add your Vercel URL (e.g. `your-app.vercel.app`) and keep `localhost` for local dev.
+4. Create a **Firestore Database**. Then deploy the app’s security rules so “Saved projects” works (fixes “Missing or insufficient permissions”): run `npx firebase use your-project-id` then `npx firebase deploy --only firestore:rules`. The repo’s `firestore.rules` lets signed-in users read/write only their own `projects`.
+5. In Project settings → General, copy your app’s config and add to `.env`:
    - `VITE_FIREBASE_API_KEY`
    - `VITE_FIREBASE_AUTH_DOMAIN` (e.g. `your-project.firebaseapp.com`)
    - `VITE_FIREBASE_PROJECT_ID`
    - `VITE_FIREBASE_STORAGE_BUCKET` (e.g. `your-project.appspot.com`)
    - `VITE_FIREBASE_MESSAGING_SENDER_ID`
    - `VITE_FIREBASE_APP_ID`
-5. (Optional) Deploy Firestore index for saved projects list:  
-   `npx firebase deploy --only firestore:indexes` (requires `firebase.json` and the Firebase CLI). Or when you first open **Saved**, Firestore may show a link in the console to create the index.
+6. (Optional) Deploy Firestore index for the saved list:  
+   `npx firebase deploy --only firestore:indexes`. Or when you first open Saved, Firestore may show a link in the console to create the index.
 
 ## Tech
 
@@ -67,8 +68,8 @@ Your **source of truth** is the GitHub repo: [github.com/hunterjabrown-sketch/se
    - Under “Import Git Repository”, find **hunterjabrown-sketch/selfbuilt** (or paste the repo URL). If you don’t see it, click **Configure** and grant Vercel access to your GitHub account/repos.
    - Click **Import** next to that repo.
 
-4. **Configure the project:**
-   - **Framework Preset:** Vite (or leave as auto-detected).
+4. **Configure the project (important — this is a Vite app, not Next.js):**
+   - **Framework Preset:** set to **Vite**. If you see "No Next.js version detected", Vercel is using the wrong framework — go to **Settings → General → Build & Development Settings** and change **Framework Preset** from Next.js to **Vite**.
    - **Build Command:** `npm run build`
    - **Output Directory:** `dist`
    - **Root Directory:** leave blank unless the app is in a subfolder.
