@@ -1,0 +1,7 @@
+@import "tailwindcss";
+
+body {
+  @apply bg-white text-neutral-900 antialiased;
+  font-family: "DM Sans", system-ui, sans-serif;
+  font-feature-settings: "rlig" 1, "calt" 1;
+}
