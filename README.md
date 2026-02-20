@@ -4,6 +4,8 @@ AI-powered DIY home improvement assistant. Describe your project, answer a few q
 
 **Repo:** [https://github.com/hunterjabrown-sketch/selfbuilt](https://github.com/hunterjabrown-sketch/selfbuilt)
 
+> **Vercel:** Add env vars from `.env` in Project → Settings → Environment Variables. See `VERCEL_ENV_CHECKLIST.md` for the list.
+
 ## Setup
 
 1. **Install dependencies**
