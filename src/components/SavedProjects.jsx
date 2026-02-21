@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../contexts/AuthContext'
-import { getProjects, deleteProject } from '../lib/projects'
+import { getProjects, deleteProject, projectDisplayTitle } from '../lib/projects'
 import Step4Guide from './Step4Guide'
 
 export default function SavedProjects({ onStartNew }) {
@@ -28,6 +28,7 @@ export default function SavedProjects({ onStartNew }) {
   }, [user])
 
   const handleDelete = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this project?')) return
     try {
       await deleteProject(id)
       setProjects((prev) => prev.filter((p) => p.id !== id))
@@ -57,6 +58,13 @@ export default function SavedProjects({ onStartNew }) {
       <div>
         <h2 className="text-xl font-bold text-neutral-900 sm:text-2xl">Saved projects</h2>
         <p className="mt-1 text-neutral-600">Your previous builder’s guides.</p>
+        <button
+          type="button"
+          onClick={onStartNew}
+          className="mt-4 rounded-lg bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-800"
+        >
+          New project
+        </button>
       </div>
       {error && (
         <div className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-800">{error}</div>
@@ -77,7 +85,7 @@ export default function SavedProjects({ onStartNew }) {
               className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-neutral-200 bg-white p-4 shadow-sm"
             >
               <div className="min-w-0 flex-1">
-                <p className="font-medium text-neutral-900">{p.projectIdea}</p>
+                <p className="font-medium text-neutral-900">{projectDisplayTitle(p.projectIdea)}</p>
                 <p className="text-sm text-neutral-500">
                   {p.createdAt ? new Date(p.createdAt).toLocaleDateString() : '—'}
                 </p>
@@ -102,13 +110,6 @@ export default function SavedProjects({ onStartNew }) {
           ))}
         </ul>
       )}
-      <button
-        type="button"
-        onClick={onStartNew}
-        className="rounded-lg border border-neutral-300 bg-white px-4 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50"
-      >
-        Start a new project
-      </button>
     </section>
   )
 }

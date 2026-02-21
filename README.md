@@ -1,6 +1,6 @@
 # SelfBuilt
 
-AI-powered DIY home improvement assistant. Describe your project, answer a few questions, optionally upload photos of your space, and get a clear step-by-step builder's guide. Sign in with Google to save your projects and revisit them anytime.
+AI-powered DIY home improvement assistant. Describe your project, answer a few questions, optionally upload photos of your space, and get a clear step-by-step builder's guide. Sign in with Google to save your projects and revisit them anytime. Saved projects are stored per account—each logged-in user only sees and can access their own.
 
 **Repo:** [https://github.com/hunterjabrown-sketch/selfbuilt](https://github.com/hunterjabrown-sketch/selfbuilt)
 

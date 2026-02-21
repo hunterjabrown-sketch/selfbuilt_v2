@@ -1,5 +1,12 @@
 import { createContext, useContext, useState, useEffect } from 'react'
-import { signInWithPopup, signOut as firebaseSignOut, onAuthStateChanged } from 'firebase/auth'
+import {
+  signInWithPopup,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  signOut as firebaseSignOut,
+  onAuthStateChanged,
+  updateProfile,
+} from 'firebase/auth'
 import { auth, googleProvider } from '../lib/firebase'
 
 const AuthContext = createContext(null)
@@ -12,6 +19,12 @@ function authErrorMessage(code) {
     'auth/unauthorized-domain': 'This domain is not allowed. Add it in Firebase Console → Authentication → Authorized domains.',
     'auth/cancelled-popup-request': 'Another sign-in was started. Please try again.',
     'auth/network-request-failed': 'Network error. Check your connection and try again.',
+    'auth/invalid-email': 'Please enter a valid email address.',
+    'auth/user-not-found': 'No account found with this email.',
+    'auth/wrong-password': 'Incorrect password.',
+    'auth/invalid-credential': 'Incorrect email or password.',
+    'auth/email-already-in-use': 'This email is already in use. Sign in instead.',
+    'auth/weak-password': 'Please use a password of at least 6 characters.',
   }
   return messages[code] || `Sign-in failed: ${code || 'unknown'}.`
 }
@@ -50,6 +63,37 @@ export function AuthProvider({ children }) {
     }
   }
 
+  const signInWithEmail = async (email, password) => {
+    if (!auth) {
+      setAuthError('Firebase is not configured. Add VITE_FIREBASE_* to .env')
+      return
+    }
+    setAuthError(null)
+    try {
+      await signInWithEmailAndPassword(auth, email, password)
+    } catch (err) {
+      const message = authErrorMessage(err?.code) || err?.message || 'Sign-in failed.'
+      setAuthError(message)
+    }
+  }
+
+  const signUpWithEmail = async (email, password, displayName = '') => {
+    if (!auth) {
+      setAuthError('Firebase is not configured. Add VITE_FIREBASE_* to .env')
+      return
+    }
+    setAuthError(null)
+    try {
+      const { user: newUser } = await createUserWithEmailAndPassword(auth, email, password)
+      if (displayName.trim()) {
+        await updateProfile(newUser, { displayName: displayName.trim() })
+      }
+    } catch (err) {
+      const message = authErrorMessage(err?.code) || err?.message || 'Sign-up failed.'
+      setAuthError(message)
+    }
+  }
+
   const signOut = async () => {
     if (auth) await firebaseSignOut(auth)
   }
@@ -57,7 +101,7 @@ export function AuthProvider({ children }) {
   const clearAuthError = () => setAuthError(null)
 
   return (
-    <AuthContext.Provider value={{ user, loading, authError, clearAuthError, signInWithGoogle, signOut }}>
+    <AuthContext.Provider value={{ user, loading, authError, clearAuthError, signInWithGoogle, signInWithEmail, signUpWithEmail, signOut }}>
       {children}
     </AuthContext.Provider>
   )

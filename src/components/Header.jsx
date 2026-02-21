@@ -1,8 +1,11 @@
+import { useState } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import Logo from './Logo'
+import ProfileModal from './ProfileModal'
 
-export default function Header({ onOpenSaved, currentView, hasSidebar, sidebarOpen, onToggleSidebar }) {
-  const { user, loading, signInWithGoogle, signOut } = useAuth()
+export default function Header({ onOpenSaved, currentView, hasSidebar, sidebarOpen, onToggleSidebar, onProfileSaved }) {
+  const { user, loading, signInWithGoogle } = useAuth()
+  const [profileOpen, setProfileOpen] = useState(false)
 
   return (
     <header className="flex h-16 shrink-0 items-center border-b border-neutral-200 bg-white">
@@ -42,18 +45,16 @@ export default function Header({ onOpenSaved, currentView, hasSidebar, sidebarOp
           {loading ? (
             <span className="h-9 w-20 animate-pulse rounded-lg bg-neutral-100" />
           ) : user ? (
-            <div className="flex items-center gap-2">
-              <span className="max-w-[120px] truncate text-sm text-neutral-600 sm:max-w-[180px]">
-                {user.displayName || user.email}
-              </span>
-              <button
-                type="button"
-                onClick={() => signOut()}
-                className="rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50"
-              >
-                Sign out
-              </button>
-            </div>
+            <button
+              type="button"
+              onClick={() => setProfileOpen(true)}
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-neutral-200 bg-neutral-100 text-neutral-600 hover:bg-neutral-200 hover:text-neutral-800"
+              aria-label="Profile"
+            >
+              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+            </button>
           ) : (
             <button
               type="button"
@@ -71,6 +72,7 @@ export default function Header({ onOpenSaved, currentView, hasSidebar, sidebarOp
           )}
         </div>
       </div>
+      <ProfileModal isOpen={profileOpen} onClose={() => setProfileOpen(false)} onSaved={onProfileSaved} />
     </header>
   )
 }

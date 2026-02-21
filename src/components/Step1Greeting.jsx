@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-export default function Step1Greeting({ onSubmit }) {
+export default function Step1Greeting({ firstName, onSubmit }) {
   const [input, setInput] = useState('')
 
   const handleSubmit = (e) => {
@@ -9,11 +9,15 @@ export default function Step1Greeting({ onSubmit }) {
     if (trimmed) onSubmit(trimmed)
   }
 
+  const title = firstName
+    ? `What would you like to build today, ${firstName}?`
+    : 'What would you like to build today?'
+
   return (
     <section className="space-y-8">
       <div>
         <h2 className="text-xl font-bold text-neutral-900 sm:text-2xl">
-          What are you trying to build?
+          {title}
         </h2>
         <p className="mt-2 text-neutral-600">
           Describe your project in a sentence or two—a shelf, a desk, a small repair, or something bigger.
