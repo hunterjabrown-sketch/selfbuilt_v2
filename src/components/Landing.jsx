@@ -55,7 +55,7 @@ export default function Landing() {
     <div className="min-h-screen scroll-smooth bg-surface font-body text-on-surface selection:bg-secondary-fixed selection:text-on-secondary-fixed [zoom:0.92] md:[zoom:0.94]">
       <nav className="sticky top-0 z-50 w-full border-0 bg-surface shadow-none ring-0">
         <div className="relative mx-auto flex max-w-7xl items-center justify-between gap-4 px-6 py-3.5 sm:px-8 md:py-4">
-          <div className="relative z-10 flex min-w-0 items-center gap-x-2.5 sm:gap-x-3">
+          <div className="relative z-10 -ml-16 flex min-w-0 items-center gap-x-2.5 sm:gap-x-3">
             <a href="#top" className="font-headline text-2xl font-bold leading-none tracking-tighter text-black shrink-0 md:text-[1.65rem]">
               SelfBuilt
             </a>
