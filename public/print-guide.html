@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Print Builder Guide</title>
+    <style>
+      @page {
+        size: auto;
+        margin: 0.65in;
+      }
+      body {
+        font-family: Arial, Helvetica, sans-serif;
+        color: #111;
+        margin: 0;
+        line-height: 1.45;
+      }
+      h1 {
+        margin: 0 0 6px;
+        font-size: 24px;
+      }
+      .meta {
+        margin: 0 0 18px;
+        font-size: 12px;
+        color: #4a4a4a;
+      }
+      h2 {
+        margin: 22px 0 10px;
+        font-size: 15px;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+      }
+      h3 {
+        margin: 0 0 8px;
+        font-size: 14px;
+      }
+      .top-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+      }
+      .card {
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 12px;
+        break-inside: avoid;
+        page-break-inside: avoid;
+      }
+      ul {
+        margin: 0;
+        padding-left: 18px;
+      }
+      li {
+        margin: 0 0 6px;
+      }
+      .step {
+        break-inside: avoid;
+        page-break-inside: avoid;
+        border-top: 1px solid #ececec;
+        margin-top: 12px;
+        padding-top: 12px;
+      }
+      .step-title {
+        margin: 0 0 6px;
+        font-size: 14px;
+        font-weight: 700;
+      }
+      .step-body {
+        margin: 0;
+        white-space: pre-wrap;
+      }
+      .screen-only {
+        margin-top: 18px;
+        font-size: 12px;
+        color: #666;
+      }
+      @media print {
+        .screen-only {
+          display: none !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main id="app"></main>
+    <script>
+      (function () {
+        const app = document.getElementById('app');
+        const params = new URLSearchParams(window.location.search);
+        const key = params.get('key');
+        if (!key) {
+          app.textContent = 'No print data found.';
+          return;
+        }
+
+        let payload = null;
+        try {
+          payload = JSON.parse(localStorage.getItem(key) || 'null');
+          localStorage.removeItem(key);
+        } catch (_) {
+          payload = null;
+        }
+
+        if (!payload) {
+          app.textContent = 'Could not load print data. Go back and click Print guide again.';
+          return;
+        }
+
+        const title = String(payload.title || "Builder's guide");
+        const projectIdea = String(payload.projectIdea || 'Not specified');
+        const materials = Array.isArray(payload.materials) ? payload.materials : [];
+        const tools = Array.isArray(payload.tools) ? payload.tools : [];
+        const steps = Array.isArray(payload.steps) ? payload.steps : [];
+
+        const h1 = document.createElement('h1');
+        h1.textContent = title;
+        app.appendChild(h1);
+
+        const meta = document.createElement('p');
+        meta.className = 'meta';
+        meta.textContent = `Project: ${projectIdea}`;
+        app.appendChild(meta);
+
+        const topGrid = document.createElement('section');
+        topGrid.className = 'top-grid';
+        app.appendChild(topGrid);
+
+        function appendListCard(parent, heading, items) {
+          const card = document.createElement('section');
+          card.className = 'card';
+          const h = document.createElement('h3');
+          h.textContent = heading;
+          card.appendChild(h);
+          const ul = document.createElement('ul');
+          if (items.length) {
+            items.forEach((item) => {
+              const li = document.createElement('li');
+              li.textContent = String(item);
+              ul.appendChild(li);
+            });
+          } else {
+            const li = document.createElement('li');
+            li.textContent = 'None listed';
+            ul.appendChild(li);
+          }
+          card.appendChild(ul);
+          parent.appendChild(card);
+        }
+
+        appendListCard(topGrid, 'Materials', materials);
+        appendListCard(topGrid, 'Tools', tools);
+
+        const instructionsHeading = document.createElement('h2');
+        instructionsHeading.textContent = 'Instructions';
+        app.appendChild(instructionsHeading);
+
+        if (!steps.length) {
+          const none = document.createElement('p');
+          none.textContent = 'No instructions provided.';
+          app.appendChild(none);
+        } else {
+          steps.forEach((step, idx) => {
+            const sec = document.createElement('section');
+            sec.className = 'step';
+
+            const titleEl = document.createElement('p');
+            titleEl.className = 'step-title';
+            const number = step && step.number != null ? step.number : idx + 1;
+            const stepTitle = step && step.title ? String(step.title) : '';
+            titleEl.textContent = stepTitle ? `Step ${number}: ${stepTitle}` : `Step ${number}`;
+            sec.appendChild(titleEl);
+
+            const body = document.createElement('p');
+            body.className = 'step-body';
+            body.textContent = step && step.body ? String(step.body) : '';
+            sec.appendChild(body);
+
+            app.appendChild(sec);
+          });
+        }
+
+        const hint = document.createElement('p');
+        hint.className = 'screen-only';
+        hint.textContent = 'Print dialog should open automatically. If it does not, use your browser print command.';
+        app.appendChild(hint);
+
+        setTimeout(() => {
+          window.print();
+        }, 250);
+      })();
+    </script>
+  </body>
+</html>

@@ -16,27 +16,21 @@ export default function Step1Greeting({ firstName, onSubmit }) {
   return (
     <section className="space-y-8">
       <div>
-        <h2 className="text-xl font-bold text-neutral-900 sm:text-2xl">
-          {title}
-        </h2>
-        <p className="mt-2 text-neutral-600">
-          Describe your project in a sentence or two—a shelf, a desk, a small repair, or something bigger.
+        <h2 className="font-headline text-2xl font-extrabold tracking-tight text-primary sm:text-3xl">{title}</h2>
+        <p className="mt-3 text-lg text-on-surface-variant">
+          Describe your project in a sentence or two: a shelf, a desk, a small repair, or something bigger.
         </p>
       </div>
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-5">
         <input
           type="text"
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder="e.g. A floating shelf next to my TV"
-          className="w-full rounded-lg border border-neutral-300 bg-white px-4 py-3 text-base text-neutral-900 placeholder:text-neutral-400 focus:border-neutral-500 focus:outline-none focus:ring-2 focus:ring-neutral-500/20"
+          className="sb-input"
           autoFocus
         />
-        <button
-          type="submit"
-          disabled={!input.trim()}
-          className="w-full rounded-lg bg-neutral-900 px-4 py-3 text-base font-semibold text-white transition hover:bg-neutral-800 disabled:opacity-50 disabled:hover:bg-neutral-900 sm:w-auto sm:min-w-[140px]"
-        >
+        <button type="submit" disabled={!input.trim()} className="sb-btn-primary w-full sm:w-auto sm:min-w-[160px]">
           Continue
         </button>
       </form>

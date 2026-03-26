@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import Header from './components/Header'
 import Sidebar from './components/Sidebar'
@@ -10,9 +10,11 @@ import SavedProjects from './components/SavedProjects'
 import { saveProject } from './lib/projects'
 import { getProfile } from './lib/profile'
 import Landing from './components/Landing'
+import TermsGate from './components/TermsGate'
 
 const STEPS = { greeting: 1, followUp: 2, generating: 3, guide: 4 }
 const STORAGE_KEY = 'selfbuilt_guide'
+const REQUIRED_TERMS_VERSION = '1'
 
 function loadPersisted() {
   try {
@@ -41,7 +43,12 @@ function AppContent() {
   const [step, setStep] = useState(STEPS.greeting)
   const [profileFirstName, setProfileFirstName] = useState('')
   const [projectIdea, setProjectIdea] = useState('')
-  const [answers, setAnswers] = useState({ dimensions: '', materialsAccess: '', experienceLevel: '' })
+  const [answers, setAnswers] = useState({
+    designDescription: '',
+    dimensions: '',
+    materialsAccess: '',
+    experienceLevel: '',
+  })
   const [media, setMedia] = useState([])
   const [guide, setGuide] = useState(null)
   const [error, setError] = useState(null)
@@ -49,27 +56,51 @@ function AppContent() {
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [saveError, setSaveError] = useState(null)
   const [profileVersion, setProfileVersion] = useState(0)
+  const [clarification, setClarification] = useState(null)
+  /** null = loading profile; true = terms accepted; false = must show Terms gate */
+  const [termsAccepted, setTermsAccepted] = useState(null)
 
+  // Restore previous guide only on refresh when already logged in (not on first sign-in)
+  const prevUserRef = useRef(undefined)
   useEffect(() => {
-    const saved = loadPersisted()
-    if (saved) {
-      setStep(saved.step)
-      setGuide(saved.guide)
+    if (user) {
+      const saved = loadPersisted()
+      if (saved) {
+        setStep(saved.step)
+        setGuide(saved.guide)
+      }
     }
   }, [])
+
+  // When user just signs in (was null, now set), go to greeting and clear persisted guide
+  useEffect(() => {
+    if (user && prevUserRef.current === null) {
+      sessionStorage.removeItem(STORAGE_KEY)
+      setStep(STEPS.greeting)
+      setGuide(null)
+      setSelectedSaved(null)
+    }
+    prevUserRef.current = user ?? null
+  }, [user])
 
   useEffect(() => {
     if (!user) {
       setProfileFirstName('')
+      setTermsAccepted(null)
       return
     }
+    setTermsAccepted(null)
     getProfile(user.uid)
       .then((profile) => {
+        const acceptedLatestTerms =
+          !!profile?.termsAcceptedAt && String(profile?.termsVersion || '') === REQUIRED_TERMS_VERSION
+        setTermsAccepted(acceptedLatestTerms)
         const name = profile?.displayName || user.displayName || ''
         const first = name.trim().split(/\s+/)[0] || ''
         setProfileFirstName(first ? first.charAt(0).toUpperCase() + first.slice(1).toLowerCase() : '')
       })
       .catch(() => {
+        setTermsAccepted(false)
         const name = user.displayName || ''
         const first = name.trim().split(/\s+/)[0] || ''
         setProfileFirstName(first ? first.charAt(0).toUpperCase() + first.slice(1).toLowerCase() : '')
@@ -79,6 +110,15 @@ function AppContent() {
   // Keep sidebar open on instructions/guide view so users can switch saved projects
   useEffect(() => {
     if ((step === STEPS.guide && guide) || selectedSaved) setSidebarOpen(true)
+  }, [step, guide, selectedSaved])
+
+  const mainRef = useRef(null)
+  useEffect(() => {
+    const onGuideOrProject = (step === STEPS.guide && guide) || selectedSaved
+    const onNewProject = step === STEPS.greeting
+    if (onGuideOrProject || onNewProject) {
+      mainRef.current?.scrollTo({ top: 0, behavior: 'instant' })
+    }
   }, [step, guide, selectedSaved])
 
   if (!user) {
@@ -97,12 +137,14 @@ function AppContent() {
 
   const handleProjectSubmit = (idea) => {
     setProjectIdea(idea)
+    setClarification(null)
     setStep(STEPS.followUp)
   }
 
   const handleFollowUpSubmit = (nextAnswers, nextMedia) => {
     setAnswers(nextAnswers)
     setMedia(nextMedia)
+    setClarification(null)
     setStep(STEPS.generating)
     setError(null)
     generateGuide(projectIdea, nextAnswers, nextMedia)
@@ -111,6 +153,7 @@ function AppContent() {
   async function generateGuide(idea, ans, files) {
     const payload = {
       projectIdea: idea,
+      designDescription: ans.designDescription || undefined,
       dimensions: ans.dimensions || undefined,
       materialsAccess: ans.materialsAccess || undefined,
       experienceLevel: ans.experienceLevel || undefined,
@@ -135,6 +178,27 @@ function AppContent() {
       if (!res.ok) throw new Error(data.error || 'Request failed')
       if (data.outOfScope && data.message) {
         setError(data.message)
+        setStep(STEPS.followUp)
+        return
+      }
+      if (data.needsClarification) {
+        setClarification({
+          message: data.message || 'We need a few more details before generating a reliable guide.',
+          questions: Array.isArray(data.questions) ? data.questions : [],
+        })
+        setError(null)
+        setStep(STEPS.followUp)
+        return
+      }
+      if (!Array.isArray(data.steps) || data.steps.length === 0) {
+        setClarification({
+          message: 'The guide response came back incomplete. Please add a little more detail so we can generate a better plan.',
+          questions: [
+            'What exact part of the house or room is this in?',
+            'What are the key dimensions?',
+            'What materials or tools do you already have?',
+          ],
+        })
         setStep(STEPS.followUp)
         return
       }
@@ -164,11 +228,12 @@ function AppContent() {
     setSelectedSaved(null)
     setStep(STEPS.greeting)
     setProjectIdea('')
-    setAnswers({ dimensions: '', materialsAccess: '', experienceLevel: '' })
+    setAnswers({ designDescription: '', dimensions: '', materialsAccess: '', experienceLevel: '' })
     setMedia([])
     setGuide(null)
     setError(null)
     setSaveError(null)
+    setClarification(null)
     savePersisted(STEPS.guide, null)
   }
 
@@ -181,16 +246,18 @@ function AppContent() {
     setView('main')
     setStep(STEPS.greeting)
     setProjectIdea('')
-    setAnswers({ dimensions: '', materialsAccess: '', experienceLevel: '' })
+    setAnswers({ designDescription: '', dimensions: '', materialsAccess: '', experienceLevel: '' })
     setMedia([])
     setGuide(null)
     setError(null)
+    setClarification(null)
     savePersisted(STEPS.guide, null)
   }
   const handleSelectSavedProject = (project) => setSelectedSaved(project)
+  const showTermsGate = termsAccepted === false
 
   return (
-    <div className="flex min-h-screen bg-white">
+    <div className="relative flex min-h-screen bg-surface font-body text-on-surface">
       {user && sidebarOpen && (
         <Sidebar
           selectedProjectId={selectedSaved?.id ?? (step === STEPS.guide && guide ? 'current' : null)}
@@ -225,9 +292,9 @@ function AppContent() {
             </div>
           </div>
         )}
-        <main className="flex-1 overflow-auto bg-neutral-50/30">
+        <main ref={mainRef} className="flex-1 overflow-auto bg-surface">
           {selectedSaved ? (
-            <div className="mx-auto max-w-2xl px-4 py-10 sm:px-6 sm:py-14">
+            <div className="mx-auto max-w-5xl px-6 py-10 sm:px-8 sm:py-14">
               <Step4Guide
                 guide={selectedSaved.guide}
                 projectIdea={selectedSaved.projectIdea}
@@ -235,11 +302,11 @@ function AppContent() {
               />
             </div>
           ) : view === 'saved' ? (
-            <div className="mx-auto max-w-2xl px-4 py-10 sm:px-6 sm:py-14">
+            <div className="mx-auto max-w-5xl px-6 py-10 sm:px-8 sm:py-14">
               <SavedProjects onStartNew={() => setView('main')} />
             </div>
           ) : (
-            <div className="mx-auto max-w-2xl px-4 py-10 sm:px-6 sm:py-14">
+            <div className="mx-auto max-w-5xl px-6 py-10 sm:px-8 sm:py-14">
               {step === STEPS.greeting && (
                 <Step1Greeting firstName={profileFirstName} onSubmit={handleProjectSubmit} />
               )}
@@ -250,13 +317,14 @@ function AppContent() {
                   initialMedia={media}
                   onSubmit={handleFollowUpSubmit}
                   error={error}
+                  clarification={clarification}
                 />
               )}
               {step === STEPS.generating && <Step3Generating />}
-{step === STEPS.guide && guide && (
+              {step === STEPS.guide && guide && (
                 <>
                   {saveError && (
-                    <p className="mb-4 text-sm text-amber-700">{saveError}</p>
+                    <p className="mb-4 rounded-xl border border-amber-200/80 bg-amber-50 px-4 py-3 text-sm text-amber-900">{saveError}</p>
                   )}
                   <Step4Guide guide={guide} projectIdea={projectIdea} onStartOver={handleStartOver} />
                 </>
@@ -265,6 +333,7 @@ function AppContent() {
           )}
         </main>
       </div>
+      {showTermsGate && <TermsGate user={user} onAccepted={() => { setTermsAccepted(true); setProfileVersion((v) => v + 1) }} />}
     </div>
   )
 }

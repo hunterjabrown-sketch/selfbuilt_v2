@@ -1,95 +1,25 @@
 # SelfBuilt
 
-AI-powered DIY home improvement assistant. Describe your project, answer a few questions, optionally upload photos of your space, and get a clear step-by-step builder's guide. Sign in with Google to save your projects and revisit them anytime. Saved projects are stored per account—each logged-in user only sees and can access their own.
+### What it’s for
 
-**Repo:** [https://github.com/hunterjabrown-sketch/selfbuilt](https://github.com/hunterjabrown-sketch/selfbuilt)
+Most people who want to **do** a home project don’t fail because they’re lazy—they fail because the path from “I have an idea” to “I know what to buy and in what order” is a mess: scattered articles, videos that don’t match your space, and advice that isn’t written for your skill level. **SelfBuilt is built to close that gap:** you describe what you want to build, answer a short set of questions, optionally show the space in a photo, and get a **single, structured guide**—materials, tools, numbered steps—and a way to save it and ask follow-ups in context. It’s not a demo of a chat box; it’s a **working app** with auth, saved projects, and generation tuned for DIY (scope, clarity, follow-through).
 
-> **Vercel:** Add env vars from `.env` in Project → Settings → Environment Variables. See `VERCEL_ENV_CHECKLIST.md` for the list.
+Stack: React (Vite), Firebase (sign-in + Firestore), Anthropic for the guide and project assistant. `server/` for local API, `api/` for Vercel.
 
-## Setup
+---
 
-1. **Install dependencies**
-   ```bash
-   npm install
-   ```
+### Run locally
 
-2. **Environment variables**
-   - Copy `.env.example` to `.env`
-   - Set `ANTHROPIC_API_KEY` to your [Anthropic API key](https://console.anthropic.com/). All API calls use this env variable only — never hardcoded.
-   - For Google sign-in and saved projects, set the `VITE_FIREBASE_*` variables (see [Firebase setup](#firebase-google-sign-in--saved-projects) below).
+```bash
+npm install
+cp .env.example .env
+npm run dev
+```
 
-3. **Run**
-   - Terminal 1 — API server: `npm run server`
-   - Terminal 2 — Frontend: `npm run dev`
-   - Open the URL Vite prints (e.g. http://localhost:5173)
+Configure `.env` using the keys in `.env.example`. Vite + API default setup is in `package.json`.
 
-## Firebase (Google sign-in + saved projects)
+---
 
-1. Create a project at [Firebase Console](https://console.firebase.google.com/).
-2. Enable **Authentication** → Sign-in method → **Google**.
-3. **Add your app’s domain so sign-in works:** Authentication → Settings → **Authorized domains** → Add your Vercel URL (e.g. `your-app.vercel.app`) and keep `localhost` for local dev.
-4. Create a **Firestore Database**. Then deploy the app’s security rules so “Saved projects” works (fixes “Missing or insufficient permissions”): run `npx firebase use your-project-id` then `npx firebase deploy --only firestore:rules`. The repo’s `firestore.rules` lets signed-in users read/write only their own `projects`.
-5. In Project settings → General, copy your app’s config and add to `.env`:
-   - `VITE_FIREBASE_API_KEY`
-   - `VITE_FIREBASE_AUTH_DOMAIN` (e.g. `your-project.firebaseapp.com`)
-   - `VITE_FIREBASE_PROJECT_ID`
-   - `VITE_FIREBASE_STORAGE_BUCKET` (e.g. `your-project.appspot.com`)
-   - `VITE_FIREBASE_MESSAGING_SENDER_ID`
-   - `VITE_FIREBASE_APP_ID`
-6. (Optional) Deploy Firestore index for the saved list:  
-   `npx firebase deploy --only firestore:indexes`. Or when you first open Saved, Firestore may show a link in the console to create the index.
+### Where things live
 
-## Tech
-
-- **Frontend:** React, Tailwind CSS, Vite, Firebase (Auth + Firestore)
-- **Backend:** Node (Express) with Claude API (vision) for generating the guide
-
-The app proxies `/api` to the server so the frontend calls the same origin in development.
-
-## Connecting GitHub and Vercel (or your v0 project)
-
-Your **source of truth** is the GitHub repo: [github.com/hunterjabrown-sketch/selfbuilt](https://github.com/hunterjabrown-sketch/selfbuilt). The app we built lives there. Vercel (and v0, which runs on Vercel) just **deploys** that repo—they don’t hold a separate copy of the app.
-
-**How to connect them:**
-
-1. **Push your code to GitHub** (if you haven’t):
-   ```bash
-   git remote add origin https://github.com/hunterjabrown-sketch/selfbuilt.git
-   git add .
-   git commit -m "Initial commit"
-   git push -u origin main
-   ```
-   (Use `master` instead of `main` if that’s your default branch.)
-
-2. **In Vercel:** Go to [vercel.com](https://vercel.com) and sign in (same account you use for v0).
-
-3. **Import the GitHub repo:**
-   - Click **Add New…** → **Project**.
-   - Under “Import Git Repository”, find **hunterjabrown-sketch/selfbuilt** (or paste the repo URL). If you don’t see it, click **Configure** and grant Vercel access to your GitHub account/repos.
-   - Click **Import** next to that repo.
-
-4. **Configure the project (important — this is a Vite app, not Next.js):**
-   - **Framework Preset:** set to **Vite**. If you see "No Next.js version detected", Vercel is using the wrong framework — go to **Settings → General → Build & Development Settings** and change **Framework Preset** from Next.js to **Vite**.
-   - **Build Command:** `npm run build`
-   - **Output Directory:** `dist`
-   - **Root Directory:** leave blank unless the app is in a subfolder.
-   - Add **Environment Variables** (same as in your `.env`): `ANTHROPIC_API_KEY` and all `VITE_FIREBASE_*` keys.
-
-5. **Deploy:** Click **Deploy**. Vercel will build from your GitHub repo and give you a URL (e.g. `selfbuilt.vercel.app`).
-
-After that, **every push to the repo** can auto-deploy (if you left “Deploy on push” on). You don’t “connect” v0 and GitHub as two separate apps—you connect **one** GitHub repo to **one** Vercel project; that project is your live SelfBuilt app. If you created a separate “SelfBuilt v0 project” in the v0 UI, you can either use that same project and point it at this repo (if v0 lets you set the repo), or create a new Vercel project and import `hunterjabrown-sketch/selfbuilt` as above.
-
-## Deploy to Vercel (short version)
-
-1. **Push the project to GitHub** (see “Connecting GitHub and Vercel” above).
-
-2. **Import the repo in Vercel**  
-   Add New → Project → select **hunterjabrown-sketch/selfbuilt**. Use Build Command `npm run build`, Output Directory `dist`.
-
-3. **Environment variables**  
-   In the Vercel project: Settings → Environment Variables. Add `ANTHROPIC_API_KEY` and all `VITE_FIREBASE_*` from your Firebase project.
-
-4. **Deploy**  
-   The frontend is served from `dist`, and `/api/generate` runs as a serverless function.
-
-Your generated guide is kept in the browser tab (sessionStorage) so it stays when you switch tabs or refresh.
+`src/` — app and guide flow · `api/` — production handlers · `server/` — local Express · Firebase rules/indexes are in-repo for deploying your own Firestore project.

@@ -8,14 +8,14 @@ export default function Header({ onOpenSaved, currentView, hasSidebar, sidebarOp
   const [profileOpen, setProfileOpen] = useState(false)
 
   return (
-    <header className="flex h-16 shrink-0 items-center border-b border-neutral-200 bg-white">
-      <div className="flex w-full items-center justify-between gap-4 px-4 sm:px-6">
+    <header className="flex min-h-16 shrink-0 items-center border-b border-outline-variant/20 bg-surface py-2 sm:py-0">
+      <div className="flex w-full items-center justify-between gap-3 px-4 sm:px-8">
         <div className="flex min-w-0 items-center gap-3">
           {user && onToggleSidebar && !sidebarOpen && (
             <button
               type="button"
               onClick={onToggleSidebar}
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-neutral-500 hover:bg-neutral-100 hover:text-neutral-700"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface"
               aria-label="Open sidebar"
             >
               <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -23,32 +23,30 @@ export default function Header({ onOpenSaved, currentView, hasSidebar, sidebarOp
               </svg>
             </button>
           )}
-          <Logo className="text-xl sm:text-2xl" />
-          <p className="hidden text-sm text-neutral-500 sm:block">
-            AI-powered DIY home improvement
-          </p>
+          <div className="flex min-w-0 flex-col gap-0 leading-tight sm:flex-row sm:items-baseline sm:gap-2.5 sm:leading-none">
+            <Logo className="text-xl sm:text-2xl" />
+            <p className="text-[11px] font-medium text-on-surface-variant sm:text-xs md:text-sm">AI-powered DIY build planner</p>
+          </div>
         </div>
         <div className="flex shrink-0 items-center gap-2">
           {user && !hasSidebar && (
             <button
               type="button"
               onClick={onOpenSaved}
-              className={`rounded-lg px-3 py-2 text-sm font-medium transition ${
-                currentView === 'saved'
-                  ? 'bg-neutral-900 text-white'
-                  : 'text-neutral-600 hover:bg-neutral-100'
+              className={`rounded-xl px-3 py-2 text-sm font-semibold transition ${
+                currentView === 'saved' ? 'bg-secondary text-on-secondary shadow-md shadow-secondary/25' : 'text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface'
               }`}
             >
               Saved
             </button>
           )}
           {loading ? (
-            <span className="h-9 w-20 animate-pulse rounded-lg bg-neutral-100" />
+            <span className="h-9 w-20 animate-pulse rounded-xl bg-surface-container-high" />
           ) : user ? (
             <button
               type="button"
               onClick={() => setProfileOpen(true)}
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-neutral-200 bg-neutral-100 text-neutral-600 hover:bg-neutral-200 hover:text-neutral-800"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-outline-variant/30 bg-surface-container-lowest text-on-surface-variant hover:border-secondary/40 hover:bg-surface-container-high hover:text-on-surface"
               aria-label="Profile"
             >
               <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -59,7 +57,7 @@ export default function Header({ onOpenSaved, currentView, hasSidebar, sidebarOp
             <button
               type="button"
               onClick={() => signInWithGoogle()}
-              className="flex items-center gap-2 rounded-lg border border-neutral-200 bg-white px-4 py-2 text-sm font-medium text-neutral-700 shadow-sm hover:bg-neutral-50"
+              className="flex items-center gap-2 rounded-xl border border-outline-variant/25 bg-surface-container-lowest px-4 py-2 text-sm font-medium text-on-surface shadow-sm hover:bg-surface-container-high"
             >
               <svg className="h-4 w-4" viewBox="0 0 24 24">
                 <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />

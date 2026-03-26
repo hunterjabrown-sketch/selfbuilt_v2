@@ -1,8 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk'
+import { CHAT_EXPERT_SYSTEM_PROMPT, buildGuideContextForChat } from '../lib/aiPrompts.js'
 
 const apiKey = process.env.ANTHROPIC_API_KEY
-
-const CHAT_SYSTEM_PROMPT = `You are a helpful DIY assistant for someone following a specific builder's guide. You have full context of their project and the guide (materials, tools, steps). Answer their questions about this project only—clarifying steps, suggesting alternatives, troubleshooting, or explaining terms. Keep answers concise and friendly. If they ask about something outside this project, gently steer them back. Do not output JSON; reply with plain text only.`
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*')
@@ -17,37 +16,48 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' })
   }
 
+  let body = req.body
+  if (typeof body === 'string') {
+    try {
+      body = JSON.parse(body)
+    } catch {
+      return res.status(400).json({ error: 'Invalid JSON body' })
+    }
+  }
+  if (!body || typeof body !== 'object') body = {}
+
   try {
-    const { projectIdea, guide, messages } = req.body || {}
-    if (!projectIdea || !guide || !Array.isArray(messages)) {
-      return res.status(400).json({ error: 'projectIdea, guide, and messages (array) are required' })
+    const projectIdea = typeof body.projectIdea === 'string' ? body.projectIdea : ''
+    const guide = body.guide && typeof body.guide === 'object' ? body.guide : { summary: {}, steps: [] }
+    const messages = Array.isArray(body.messages) ? body.messages : null
+    if (!messages) {
+      return res.status(400).json({ error: 'messages must be an array' })
     }
     if (!apiKey) {
       return res.status(500).json({ error: 'ANTHROPIC_API_KEY is not set' })
     }
 
-    const summary = guide.summary || {}
-    const steps = guide.steps || []
-    const context = [
-      `Project: ${projectIdea}`,
-      'Materials: ' + (summary.materials || []).join(', '),
-      'Tools: ' + (summary.tools || []).join(', '),
-      'Steps:',
-      ...(steps || []).map((s, i) => `  ${s.number ?? i + 1}. ${s.title || 'Step'}: ${(s.body || '').slice(0, 300)}...`),
-    ].join('\n')
+    const guideBlock = buildGuideContextForChat(projectIdea, guide)
+    const system = `${CHAT_EXPERT_SYSTEM_PROMPT}\n\n--- GUIDE CONTEXT (authoritative for this project) ---\n${guideBlock}`
 
-    const system = `${CHAT_SYSTEM_PROMPT}\n\nGuide context:\n${context}`
-    const chatMessages = messages.map((m) => ({ role: m.role, content: m.content }))
+    const chatMessages = messages
+      .filter((m) => m && (m.role === 'user' || m.role === 'assistant') && typeof m.content === 'string')
+      .map((m) => ({ role: m.role, content: String(m.content) }))
+    if (chatMessages.length === 0) {
+      return res.status(400).json({ error: 'At least one message with role and content is required' })
+    }
 
     const anthropic = new Anthropic({ apiKey })
     const message = await anthropic.messages.create({
       model: 'claude-sonnet-4-20250514',
-      max_tokens: 1024,
+      max_tokens: 2048,
       system,
       messages: chatMessages,
     })
 
-    const text = message.content.find((b) => b.type === 'text')?.text?.trim() || "I'm not sure how to help with that. Try asking about a specific step or material from your guide."
+    const text =
+      message.content.find((b) => b.type === 'text')?.text?.trim() ||
+      "I'm not sure how to help with that. Try asking about a specific step or material from your guide."
     return res.status(200).json({ message: text })
   } catch (err) {
     console.error(err)

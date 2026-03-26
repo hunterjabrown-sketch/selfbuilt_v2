@@ -52,7 +52,7 @@ export default function ProfileModal({ isOpen, onClose, onSaved }) {
       onSaved?.()
       onClose()
     } catch (err) {
-      setError(err?.message || 'Couldn’t save profile')
+      setError(err?.message || 'Couldn’t save')
     } finally {
       setSaving(false)
     }
@@ -62,26 +62,22 @@ export default function ProfileModal({ isOpen, onClose, onSaved }) {
 
   return (
     <>
-      <div
-        className="fixed inset-0 z-40 bg-black/40"
-        aria-hidden
-        onClick={onClose}
-      />
+      <div className="fixed inset-0 z-40 bg-primary/40 backdrop-blur-[2px]" aria-hidden onClick={onClose} />
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div
-          className="relative w-full max-w-md rounded-2xl border border-neutral-200 bg-white shadow-xl"
+          className="relative w-full max-w-md overflow-hidden rounded-2xl border border-outline-variant/20 bg-surface-container-lowest shadow-xl ghost-shadow"
           role="dialog"
           aria-modal="true"
           aria-labelledby="profile-title"
         >
-          <div className="flex items-center justify-between border-b border-neutral-200 px-5 py-4">
-            <h2 id="profile-title" className="text-lg font-semibold text-neutral-900">
+          <div className="flex items-center justify-between border-b border-outline-variant/15 px-5 py-4">
+            <h2 id="profile-title" className="font-headline text-lg font-bold text-primary">
               Profile
             </h2>
             <button
               type="button"
               onClick={onClose}
-              className="rounded-lg p-2 text-neutral-500 hover:bg-neutral-100 hover:text-neutral-700"
+              className="rounded-xl p-2 text-on-surface-variant hover:bg-surface-container-high"
               aria-label="Close"
             >
               <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -89,12 +85,10 @@ export default function ProfileModal({ isOpen, onClose, onSaved }) {
               </svg>
             </button>
           </div>
-          <form onSubmit={handleSubmit} className="p-5 space-y-4">
-            {error && (
-              <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-800">{error}</p>
-            )}
+          <form onSubmit={handleSubmit} className="space-y-4 p-5">
+            {error && <p className="rounded-xl bg-error-container/50 px-3 py-2 text-sm text-error">{error}</p>}
             <div>
-              <label htmlFor="profile-email" className="block text-sm font-medium text-neutral-700">
+              <label htmlFor="profile-email" className="block text-sm font-medium text-on-surface-variant">
                 Email
               </label>
               <input
@@ -103,12 +97,12 @@ export default function ProfileModal({ isOpen, onClose, onSaved }) {
                 value={user?.email ?? ''}
                 readOnly
                 disabled
-                className="mt-1 w-full rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-2 text-sm text-neutral-500"
+                className="sb-input mt-1 cursor-not-allowed opacity-70"
               />
-              <p className="mt-1 text-xs text-neutral-400">From your sign-in account; can’t be changed here.</p>
+              <p className="mt-1 text-xs text-on-surface-variant/80">From your sign-in account; can’t be changed here.</p>
             </div>
             <div>
-              <label htmlFor="profile-displayName" className="block text-sm font-medium text-neutral-700">
+              <label htmlFor="profile-displayName" className="block text-sm font-medium text-on-surface-variant">
                 Display name
               </label>
               <input
@@ -117,11 +111,11 @@ export default function ProfileModal({ isOpen, onClose, onSaved }) {
                 value={form.displayName}
                 onChange={handleChange('displayName')}
                 placeholder="Your name"
-                className="mt-1 w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm text-neutral-900 placeholder:text-neutral-400"
+                className="sb-input mt-1 text-sm"
               />
             </div>
             <div>
-              <label htmlFor="profile-phone" className="block text-sm font-medium text-neutral-700">
+              <label htmlFor="profile-phone" className="block text-sm font-medium text-on-surface-variant">
                 Phone
               </label>
               <input
@@ -130,11 +124,11 @@ export default function ProfileModal({ isOpen, onClose, onSaved }) {
                 value={form.phone}
                 onChange={handleChange('phone')}
                 placeholder="Optional"
-                className="mt-1 w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm text-neutral-900 placeholder:text-neutral-400"
+                className="sb-input mt-1 text-sm"
               />
             </div>
             <div>
-              <label htmlFor="profile-photoURL" className="block text-sm font-medium text-neutral-700">
+              <label htmlFor="profile-photoURL" className="block text-sm font-medium text-on-surface-variant">
                 Photo URL
               </label>
               <input
@@ -143,29 +137,29 @@ export default function ProfileModal({ isOpen, onClose, onSaved }) {
                 value={form.photoURL}
                 onChange={handleChange('photoURL')}
                 placeholder="https://…"
-                className="mt-1 w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm text-neutral-900 placeholder:text-neutral-400"
+                className="sb-input mt-1 text-sm"
               />
             </div>
             <div className="flex gap-2 pt-2">
               <button
                 type="button"
                 onClick={onClose}
-                className="rounded-lg border border-neutral-200 px-4 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50"
+                className="rounded-xl border border-outline-variant/30 bg-surface-container-high px-4 py-2.5 text-sm font-medium text-on-surface hover:bg-surface-container-high/80"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={loading || saving}
-                className="rounded-lg bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-800 disabled:opacity-50"
+                className="sb-btn-primary flex-1 py-2.5 text-sm disabled:opacity-50"
               >
                 {saving ? 'Saving…' : 'Save'}
               </button>
             </div>
           </form>
           {loading && (
-            <div className="absolute inset-0 flex items-center justify-center rounded-2xl bg-white/80">
-              <div className="h-8 w-8 animate-spin rounded-full border-2 border-neutral-300 border-t-neutral-600" />
+            <div className="absolute inset-0 flex items-center justify-center rounded-2xl bg-surface/80 backdrop-blur-sm">
+              <div className="h-8 w-8 animate-spin rounded-full border-2 border-outline-variant border-t-secondary" />
             </div>
           )}
         </div>

@@ -14,6 +14,10 @@ dist
 dist-ssr
 *.local
 
+# Design export (keep local only)
+stitch_selfbuilt.zip
+.stitch_extract/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

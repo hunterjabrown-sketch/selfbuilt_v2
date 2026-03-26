@@ -8,7 +8,7 @@ export default function ProjectChat({ projectIdea, guide }) {
   const bottomRef = useRef(null)
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+    if (messages.length > 0) bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
   const handleSubmit = async (e) => {
@@ -42,26 +42,21 @@ export default function ProjectChat({ projectIdea, guide }) {
   }
 
   return (
-    <div className="rounded-xl border-2 border-neutral-200 bg-white overflow-hidden">
-      <div className="border-b border-neutral-200 bg-neutral-50 px-4 py-3">
-        <h3 className="text-sm font-bold uppercase tracking-wider text-neutral-600">Project assistant</h3>
-        <p className="text-xs text-neutral-500 mt-0.5">Ask about this project—steps, materials, or troubleshooting.</p>
+    <div className="sb-card ghost-shadow overflow-hidden rounded-[1.25rem] border-outline-variant/20">
+      <div className="border-b border-outline-variant/15 bg-surface-container-low/90 px-5 py-4">
+        <h3 className="font-label text-xs font-extrabold uppercase tracking-[0.15em] text-secondary">Project assistant</h3>
+        <p className="mt-1 text-sm text-on-surface-variant">Ask about this project: steps, materials, or troubleshooting.</p>
       </div>
-      <div className="flex flex-col max-h-[320px]">
-        <div className="flex-1 overflow-y-auto p-4 space-y-4 min-h-[120px]">
+      <div className="flex max-h-[320px] flex-col">
+        <div className="min-h-[120px] flex-1 space-y-4 overflow-y-auto p-5">
           {messages.length === 0 && (
-            <p className="text-sm text-neutral-500">Ask a question about your project or any step in the guide.</p>
+            <p className="text-sm text-on-surface-variant">Ask a question about your project or any step in the guide.</p>
           )}
           {messages.map((m, i) => (
-            <div
-              key={i}
-              className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}
-            >
+            <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
               <div
-                className={`max-w-[85%] rounded-lg px-3 py-2 text-sm ${
-                  m.role === 'user'
-                    ? 'bg-neutral-900 text-white'
-                    : 'bg-neutral-100 text-neutral-800'
+                className={`max-w-[85%] rounded-xl px-4 py-2.5 text-sm ${
+                  m.role === 'user' ? 'bg-primary text-on-primary shadow-sm' : 'bg-secondary/10 text-on-surface'
                 }`}
               >
                 <p className="whitespace-pre-wrap">{m.content}</p>
@@ -70,15 +65,13 @@ export default function ProjectChat({ projectIdea, guide }) {
           ))}
           {loading && (
             <div className="flex justify-start">
-              <div className="rounded-lg bg-neutral-100 px-3 py-2 text-sm text-neutral-500">Thinking…</div>
+              <div className="rounded-xl bg-surface-container-high px-4 py-2.5 text-sm text-on-surface-variant">Thinking…</div>
             </div>
           )}
           <div ref={bottomRef} />
         </div>
-        {error && (
-          <p className="px-4 pb-2 text-xs text-red-600">{error}</p>
-        )}
-        <form onSubmit={handleSubmit} className="p-4 border-t border-neutral-200">
+        {error && <p className="px-5 pb-2 text-xs text-error">{error}</p>}
+        <form onSubmit={handleSubmit} className="border-t border-outline-variant/15 bg-surface-container-lowest/50 p-4">
           <div className="flex gap-2">
             <input
               type="text"
@@ -86,12 +79,12 @@ export default function ProjectChat({ projectIdea, guide }) {
               onChange={(e) => setInput(e.target.value)}
               placeholder="Ask about a step, material, or the project…"
               disabled={loading}
-              className="flex-1 rounded-lg border border-neutral-200 px-3 py-2 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-neutral-400 focus:outline-none disabled:opacity-60"
+              className="sb-input flex-1 py-2.5 text-sm disabled:opacity-60"
             />
             <button
               type="submit"
               disabled={loading || !input.trim()}
-              className="shrink-0 rounded-lg bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-800 disabled:opacity-50"
+              className="sb-btn-dark shrink-0 px-5 py-2.5 text-sm"
             >
               Send
             </button>
