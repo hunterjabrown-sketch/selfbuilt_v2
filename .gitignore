@@ -14,8 +14,9 @@ dist
 dist-ssr
 *.local
 
-# Design export (keep local only)
-stitch_selfbuilt.zip
+# Design/reference files (keep local only)
+assets/reference/screenshots/*
+assets/reference/exports/*.zip
 .stitch_extract/
 
 # Editor directories and files

@@ -1,12 +1,14 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import SignInModal from './SignInModal'
 
 const fill = { fontVariationSettings: "'FILL' 1" }
 
 export default function Landing() {
   const [signInOpen, setSignInOpen] = useState(false)
+  const [activeNav, setActiveNav] = useState('product')
   const howItWorksRef = useRef(null)
   const builderGuideRef = useRef(null)
+  const communityRef = useRef(null)
   const footerRef = useRef(null)
 
   const openSignIn = () => setSignInOpen(true)
@@ -19,42 +21,78 @@ export default function Landing() {
     builderGuideRef.current?.scrollIntoView({ behavior: 'smooth' })
   }
 
-  const scrollToFooter = () => {
-    footerRef.current?.scrollIntoView({ behavior: 'smooth' })
+  const scrollToCommunity = () => {
+    communityRef.current?.scrollIntoView({ behavior: 'smooth' })
   }
+
+  useEffect(() => {
+    const updateActiveSection = () => {
+      const scrollY = window.scrollY
+      const viewportMid = scrollY + window.innerHeight * 0.55
+      const nearPageBottom = window.innerHeight + scrollY >= document.body.offsetHeight - 40
+      const guidesTop = builderGuideRef.current?.offsetTop || Number.POSITIVE_INFINITY
+      const communityTop = communityRef.current?.offsetTop || Number.POSITIVE_INFINITY
+
+      if (nearPageBottom || viewportMid >= communityTop) {
+        setActiveNav('community')
+      } else if (viewportMid >= guidesTop) {
+        setActiveNav('guides')
+      } else {
+        setActiveNav('product')
+      }
+    }
+
+    updateActiveSection()
+    window.addEventListener('scroll', updateActiveSection, { passive: true })
+    window.addEventListener('resize', updateActiveSection)
+    return () => {
+      window.removeEventListener('scroll', updateActiveSection)
+      window.removeEventListener('resize', updateActiveSection)
+    }
+  }, [])
 
   return (
     <div className="min-h-screen scroll-smooth bg-surface font-body text-on-surface selection:bg-secondary-fixed selection:text-on-secondary-fixed [zoom:0.92] md:[zoom:0.94]">
       <nav className="sticky top-0 z-50 w-full border-0 bg-surface shadow-none ring-0">
         <div className="relative mx-auto flex max-w-7xl items-center justify-between gap-4 px-6 py-3.5 sm:px-8 md:py-4">
           <div className="relative z-10 flex min-w-0 items-center gap-x-2.5 sm:gap-x-3">
-            <a href="#top" className="font-headline text-xl font-bold leading-none tracking-tighter text-black shrink-0">
+            <a href="#top" className="font-headline text-2xl font-bold leading-none tracking-tighter text-black shrink-0 md:text-[1.65rem]">
               SelfBuilt
             </a>
-            <span className="font-body text-[11px] font-medium leading-snug text-neutral-500 sm:text-xs md:text-sm">
+            <span className="font-body text-xs font-medium leading-snug text-neutral-500 sm:text-sm md:text-base">
               AI-powered DIY build planner
             </span>
           </div>
           <div className="absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 items-center gap-7 font-['Manrope'] text-sm font-medium tracking-tight text-black md:flex lg:gap-9">
-            <a className="border-b-2 border-[#1b6b51] py-1 font-semibold text-black" href="#top">
+            <a
+              className={activeNav === 'product' ? 'border-b-2 border-[#1b6b51] py-1 font-semibold text-black' : 'py-1 text-neutral-600 transition-colors hover:text-black'}
+              href="#top"
+              onClick={(e) => {
+                e.preventDefault()
+                window.scrollTo({ top: 0, behavior: 'smooth' })
+                setActiveNav('product')
+              }}
+            >
               Product
             </a>
             <a
-              className="py-1 text-neutral-600 transition-colors hover:text-black"
+              className={activeNav === 'guides' ? 'border-b-2 border-[#1b6b51] py-1 font-semibold text-black' : 'py-1 text-neutral-600 transition-colors hover:text-black'}
               href="#inside-builder-guide"
               onClick={(e) => {
                 e.preventDefault()
                 scrollToBuilderGuide()
+                setActiveNav('guides')
               }}
             >
               Guides
             </a>
             <a
-              className="py-1 text-neutral-600 transition-colors hover:text-black"
+              className={activeNav === 'community' ? 'border-b-2 border-[#1b6b51] py-1 font-semibold text-black' : 'py-1 text-neutral-600 transition-colors hover:text-black'}
               href="#site-footer"
               onClick={(e) => {
                 e.preventDefault()
-                scrollToFooter()
+                scrollToCommunity()
+                setActiveNav('community')
               }}
             >
               Community
@@ -407,7 +445,7 @@ export default function Landing() {
           </div>
         </section>
 
-        <section className="py-28 md:py-32">
+        <section id="community" ref={communityRef} className="py-28 md:py-32">
           <div className="mx-auto max-w-4xl px-8 text-center">
             <h2 className="mb-8 font-headline text-4xl font-extrabold tracking-tighter md:text-5xl">Ready to build with confidence?</h2>
             <p className="mb-12 max-w-2xl mx-auto font-body text-lg text-on-surface-variant md:text-xl">
