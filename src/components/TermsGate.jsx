@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { saveProfile } from '../lib/profile'
 
 const TERMS_URL = '/terms.html'
-const TERMS_VERSION = '1'
+const TERMS_VERSION = '2'
 
 export default function TermsGate({ user, onAccepted }) {
   const [saving, setSaving] = useState(false)

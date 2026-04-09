@@ -1,10 +1,30 @@
-import 'dotenv/config';
+/**
+ * Required environment variables:
+ * - ANTHROPIC_API_KEY — guide generation and chat
+ * - YOUTUBE_API_KEY — GET /api/videos/step (YouTube Data API v3; enable the API in Google Cloud)
+ */
+import dotenv from 'dotenv';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
 import express from 'express';
 import cors from 'cors';
 import Anthropic from '@anthropic-ai/sdk';
-import { GENERATE_SYSTEM_PROMPT, CHAT_EXPERT_SYSTEM_PROMPT, buildGuideContextForChat } from '../lib/aiPrompts.js';
+import {
+  CHAT_EXPERT_SYSTEM_PROMPT,
+  buildGuideContextForChat,
+  GENERATE_SYSTEM_PROMPT,
+  GENERATE_SYSTEM_PROMPT_RETRY,
+} from '../lib/aiPrompts.js';
+import { applyShowVideoToGuide } from '../lib/stepVideoEligibility.js';
+import { fetchTopVideoForStep } from '../lib/youtubeVideoSearch.js';
+import { ANTHROPIC_MODEL_GUIDE_GENERATION, ANTHROPIC_MODEL_PROJECT_CHAT } from '../lib/anthropicModels.js';
+import { omitLegacyPartialGuideFields, parseCompleteGuideFromModelText } from '../lib/guideApiContract.js';
+import { fetchCostEstimateForGuide } from '../lib/costEstimateHaiku.js';
 
-// API key must come from .env only — never hardcode ANTHROPIC_API_KEY.
+const __dirname = dirname(fileURLToPath(import.meta.url));
+dotenv.config({ path: join(__dirname, '..', '.env') });
+
+// Never hardcode API keys.
 const apiKey = process.env.ANTHROPIC_API_KEY;
 
 const app = express();
@@ -13,60 +33,14 @@ app.use(express.json({ limit: '100mb' }));
 
 const anthropic = new Anthropic({ apiKey });
 
-function normalizeVagueText(value) {
-  return String(value || '')
-    .toLowerCase()
-    .replace(/([^\w\s])/g, ' ')
-    .replace(/(.)\1{2,}/g, '$1')
-    .replace(/\s+/g, ' ')
-    .trim();
-}
-
-function hasVagueSizeLanguage(value) {
-  const normalized = normalizeVagueText(value);
-  const tokens = normalized.split(' ').filter(Boolean);
-  return tokens.some((token) => (
-    ['kinda', 'kind', 'sorta', 'sort', 'pretty', 'somewhat', 'about', 'around', 'ish', 'tall', 'short', 'big', 'small', 'large', 'medium', 'normal']
-      .some((keyword) => token.startsWith(keyword))
-  ));
-}
-
-function maybeNeedsClarification(projectIdea, dimensions) {
-  const idea = String(projectIdea || '').toLowerCase();
-  const dims = String(dimensions || '').toLowerCase().trim();
-  const hasNumericMeasurement = /\b\d+(\.\d+)?\s*(in|inch|inches|ft|foot|feet|cm|mm|m|")\b/i.test(dims);
-  const likelyNeedsExplicitSizing = /\b(table|desk|bench|shelf|cabinet|bookcase|island|counter|vanity|workbench|console)\b/i.test(idea);
-
-  if (!likelyNeedsExplicitSizing) return null;
-
-  if (!dims) {
-    return {
-      needsClarification: true,
-      message: 'This project usually needs exact sizing to avoid bad cuts or awkward proportions.',
-      questions: [
-        'What finished height do you want?',
-        'What finished width and length do you want?',
-        'Any max size limits from your room or doorway?',
-      ],
-    };
-  }
-
-  if (hasVagueSizeLanguage(dims) && !hasNumericMeasurement) {
-    return {
-      needsClarification: true,
-      message: 'Your sizing sounds approximate, and exact dimensions will change the cut list and hardware choices.',
-      questions: [
-        'Target height (in or cm)?',
-        'Target width and length (in or cm)?',
-        'Do you want exact dimensions or an acceptable range?',
-      ],
-    };
-  }
-
-  return null;
-}
-
-function buildUserMessage(projectIdea, designDescription, dimensions, materialsAccess, experienceLevel, media) {
+function buildUserMessage(
+  projectIdea,
+  designDescription,
+  dimensions,
+  materialsAccess,
+  experienceLevel,
+  media,
+) {
   const parts = [
     `Project idea: ${projectIdea}`,
     designDescription ? `Design description: ${designDescription}` : null,
@@ -75,7 +49,8 @@ function buildUserMessage(projectIdea, designDescription, dimensions, materialsA
     experienceLevel ? `Experience level: ${experienceLevel}` : null,
   ].filter(Boolean);
 
-  const content = [{ type: 'text', text: parts.join('\n') }];
+  const userText = parts.join('\n');
+  const content = [{ type: 'text', text: userText }];
 
   // Add image blocks for vision (Claude: jpeg, png, gif, webp only)
   const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
@@ -98,6 +73,16 @@ function buildUserMessage(projectIdea, designDescription, dimensions, materialsA
   return content;
 }
 
+async function fetchAssistantText(system, content) {
+  const message = await anthropic.messages.create({
+    model: ANTHROPIC_MODEL_GUIDE_GENERATION,
+    max_tokens: 8192,
+    system,
+    messages: [{ role: 'user', content }],
+  });
+  return message.content.find((b) => b.type === 'text')?.text || '';
+}
+
 app.post('/api/generate', async (req, res) => {
   try {
     const { projectIdea, designDescription, dimensions, materialsAccess, experienceLevel, media } = req.body;
@@ -106,11 +91,6 @@ app.post('/api/generate', async (req, res) => {
     }
     if (!apiKey) {
       return res.status(500).json({ error: 'ANTHROPIC_API_KEY is not set in .env' });
-    }
-
-    const clarification = maybeNeedsClarification(projectIdea, dimensions);
-    if (clarification) {
-      return res.status(200).json(clarification);
     }
 
     const content = buildUserMessage(
@@ -122,25 +102,69 @@ app.post('/api/generate', async (req, res) => {
       media || [],
     );
 
-    const message = await anthropic.messages.create({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 8192,
-      system: GENERATE_SYSTEM_PROMPT,
-      messages: [{ role: 'user', content }],
-    });
+    let text = await fetchAssistantText(GENERATE_SYSTEM_PROMPT, content);
+    console.log('[api/generate] first Anthropic raw text (full):', text);
 
-    const text = message.content.find(b => b.type === 'text')?.text || '{}';
-    let guide;
-    try {
-      guide = JSON.parse(text.trim());
-    } catch {
-      guide = { title: null, summary: { materials: [], tools: [] }, steps: [{ number: 1, title: 'Instructions', body: text }] };
+    let guide = parseCompleteGuideFromModelText(text);
+    console.log(
+      '[api/generate] first parseCompleteGuideFromModelText:',
+      guide === null ? 'null' : 'guide',
+    );
+
+    if (!guide) {
+      text = await fetchAssistantText(GENERATE_SYSTEM_PROMPT_RETRY, content);
+      console.log('[api/generate] retry Anthropic raw text (full):', text);
+
+      guide = parseCompleteGuideFromModelText(text);
+      console.log(
+        '[api/generate] retry parseCompleteGuideFromModelText:',
+        guide === null ? 'null' : 'guide',
+      );
     }
-    if (!guide.title && guide.summary) guide.title = null;
+
+    if (!guide) {
+      return res.status(500).json({ error: 'Could not generate a complete guide. Try again.' });
+    }
+
+    guide = omitLegacyPartialGuideFields(guide);
+    guide = applyShowVideoToGuide(guide, experienceLevel);
+
+    const costEstimate = await fetchCostEstimateForGuide(anthropic, projectIdea, guide);
+    guide = { ...guide, costEstimate: costEstimate ?? null };
+
     res.json(guide);
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: err.message || 'Failed to generate guide' });
+  }
+});
+
+app.get('/api/videos/step', async (req, res) => {
+  try {
+    const stepTitle = String(req.query.stepTitle || '').trim();
+    const projectType = String(req.query.projectType || '').trim();
+    const experienceLevel = String(req.query.experienceLevel || '').trim();
+    const excludeVideoIds = String(req.query.excludeVideoIds || '').trim();
+    if (!stepTitle || !projectType) {
+      return res.status(200).json({ video: null });
+    }
+    const video = await fetchTopVideoForStep({
+      stepTitle,
+      projectType,
+      experienceLevel,
+      excludeVideoIds: excludeVideoIds || undefined,
+    });
+    if (video) {
+      return res.status(200).json({
+        title: video.title,
+        thumbnailUrl: video.thumbnailUrl,
+        videoUrl: video.videoUrl,
+      });
+    }
+    return res.status(200).json({ video: null });
+  } catch (err) {
+    console.error('[api/videos/step]', err);
+    return res.status(200).json({ video: null });
   }
 });
 
@@ -161,7 +185,7 @@ app.post('/api/chat', async (req, res) => {
       .map((m) => ({ role: m.role, content: String(m.content) }));
 
     const message = await anthropic.messages.create({
-      model: 'claude-sonnet-4-20250514',
+      model: ANTHROPIC_MODEL_PROJECT_CHAT,
       max_tokens: 2048,
       system,
       messages: chatMessages,
@@ -175,5 +199,8 @@ app.post('/api/chat', async (req, res) => {
   }
 });
 
-const PORT = process.env.PORT || 3001;
-app.listen(PORT, () => console.log(`API running on http://localhost:${PORT}`));
+// Must run at module top level (not inside a function or conditional) so the process stays alive.
+const PORT = Number(process.env.PORT) || 3001;
+app.listen(PORT, () => {
+  console.log(`API running on http://localhost:${PORT}`);
+});

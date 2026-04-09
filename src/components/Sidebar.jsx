@@ -1,12 +1,26 @@
 import { useState, useEffect } from 'react'
+import { DollarSign } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import { getProjects, deleteProject, projectDisplayTitle } from '../lib/projects'
+
+function validCostEstimate(costEstimate) {
+  if (!costEstimate || typeof costEstimate !== 'object') return null
+  const low = Number(costEstimate.estimatedSavingsLow)
+  const high = Number(costEstimate.estimatedSavingsHigh)
+  if (!Number.isFinite(low) || !Number.isFinite(high) || low <= 0 || high <= 0) return null
+  return { low: Math.round(low), high: Math.round(high) }
+}
+
+function money(n) {
+  return `$${Number(n).toLocaleString('en-US')}`
+}
 
 export default function Sidebar({ selectedProjectId, onSelectProject, onDeleteProject, onClose, onNewProject, refreshTrigger, currentProject }) {
   const { user, signOut } = useAuth()
   const [projects, setProjects] = useState([])
   const [loadingProjects, setLoadingProjects] = useState(false)
   const [loadError, setLoadError] = useState(null)
+  const [savingsOpen, setSavingsOpen] = useState(false)
 
   useEffect(() => {
     if (!user) return
@@ -21,9 +35,23 @@ export default function Sidebar({ selectedProjectId, onSelectProject, onDeletePr
   const list = currentProject && !projects.some((p) => p.projectIdea === currentProject.projectIdea)
     ? [currentProject, ...projects]
     : projects
+  const savingsRows = projects
+    .map((p) => {
+      const est = validCostEstimate(p?.costEstimate || p?.guide?.costEstimate)
+      if (!est) return null
+      return {
+        id: p.id,
+        title: projectDisplayTitle(p.projectIdea),
+        low: est.low,
+        high: est.high,
+      }
+    })
+    .filter(Boolean)
+  const lifetimeLow = savingsRows.reduce((sum, p) => sum + p.low, 0)
+  const lifetimeHigh = savingsRows.reduce((sum, p) => sum + p.high, 0)
 
   return (
-    <aside className="flex h-screen w-64 shrink-0 flex-col border-r border-outline-variant/20 bg-surface-container-low">
+    <aside className="flex h-full min-h-0 w-64 shrink-0 flex-col border-r border-outline-variant/20 bg-surface-container-low">
       <div className="shrink-0 border-b border-outline-variant/20 px-4 pb-3 pt-4">
         <div className="flex items-center justify-between gap-3">
           <p className="min-w-0 flex-1 font-headline text-lg font-bold tracking-tight text-primary">Saved projects</p>
@@ -48,8 +76,8 @@ export default function Sidebar({ selectedProjectId, onSelectProject, onDeletePr
           </button>
         )}
       </div>
-      <div className="flex flex-1 flex-col overflow-hidden p-3">
-        <div className="flex-1 overflow-y-auto">
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden p-3">
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
           {loadError && !loadingProjects && (
             <p className="px-2 py-4 text-sm leading-relaxed text-amber-800">{loadError}</p>
           )}
@@ -99,6 +127,41 @@ export default function Sidebar({ selectedProjectId, onSelectProject, onDeletePr
           ) : null}
         </div>
         <div className="mt-auto shrink-0 border-t border-outline-variant/20 p-3">
+          {savingsRows.length > 0 && (
+            <div className="mb-3">
+              <button
+                type="button"
+                onClick={() => setSavingsOpen((v) => !v)}
+                className="w-full rounded-xl border border-outline-variant/30 bg-surface-container px-3 py-2.5 text-left hover:bg-surface-container-high"
+              >
+                <div className="flex items-start gap-2.5">
+                  <span className="mt-0.5 rounded-lg bg-emerald-100/80 p-1.5 text-emerald-700">
+                    <DollarSign className="h-4 w-4" />
+                  </span>
+                  <div className="min-w-0">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-on-surface-variant">Lifetime DIY Savings</p>
+                    <p className="mt-0.5 text-sm font-bold text-emerald-700">
+                      ~{money(lifetimeLow)} - {money(lifetimeHigh)}
+                    </p>
+                    <p className="mt-0.5 text-xs text-on-surface-variant/80">{savingsRows.length} projects built with SelfBuilt</p>
+                  </div>
+                </div>
+              </button>
+              {savingsOpen && (
+                <div className="mt-2 rounded-xl border border-outline-variant/30 bg-surface p-3 shadow-lg">
+                  <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-on-surface-variant">Per-project savings</p>
+                  <ul className="max-h-52 space-y-1.5 overflow-y-auto pr-1 text-xs text-on-surface-variant">
+                    {savingsRows.map((row) => (
+                      <li key={row.id} className="flex items-start justify-between gap-3">
+                        <span className="line-clamp-2 min-w-0">{row.title}</span>
+                        <span className="shrink-0 font-semibold text-emerald-700">{money(row.low)} - {money(row.high)}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          )}
           <button
             type="button"
             onClick={() => signOut()}

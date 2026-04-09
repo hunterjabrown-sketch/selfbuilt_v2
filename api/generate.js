@@ -1,61 +1,11 @@
 import Anthropic from '@anthropic-ai/sdk'
-import { GENERATE_SYSTEM_PROMPT } from '../lib/aiPrompts.js'
+import { ANTHROPIC_MODEL_GUIDE_GENERATION } from '../lib/anthropicModels.js'
+import { GENERATE_SYSTEM_PROMPT, GENERATE_SYSTEM_PROMPT_RETRY } from '../lib/aiPrompts.js'
+import { applyShowVideoToGuide } from '../lib/stepVideoEligibility.js'
+import { omitLegacyPartialGuideFields, parseCompleteGuideFromModelText } from '../lib/guideApiContract.js'
+import { fetchCostEstimateForGuide } from '../lib/costEstimateHaiku.js'
 
-// API key from Vercel env — never hardcode.
 const apiKey = process.env.ANTHROPIC_API_KEY
-
-function normalizeVagueText(value) {
-  return String(value || '')
-    .toLowerCase()
-    .replace(/([^\w\s])/g, ' ')
-    .replace(/(.)\1{2,}/g, '$1')
-    .replace(/\s+/g, ' ')
-    .trim()
-}
-
-function hasVagueSizeLanguage(value) {
-  const normalized = normalizeVagueText(value)
-  const tokens = normalized.split(' ').filter(Boolean)
-  return tokens.some((token) => (
-    ['kinda', 'kind', 'sorta', 'sort', 'pretty', 'somewhat', 'about', 'around', 'ish', 'tall', 'short', 'big', 'small', 'large', 'medium', 'normal']
-      .some((keyword) => token.startsWith(keyword))
-  ))
-}
-
-function maybeNeedsClarification(projectIdea, dimensions) {
-  const idea = String(projectIdea || '').toLowerCase()
-  const dims = String(dimensions || '').toLowerCase().trim()
-  const hasNumericMeasurement = /\b\d+(\.\d+)?\s*(in|inch|inches|ft|foot|feet|cm|mm|m|")\b/i.test(dims)
-  const likelyNeedsExplicitSizing = /\b(table|desk|bench|shelf|cabinet|bookcase|island|counter|vanity|workbench|console)\b/i.test(idea)
-
-  if (!likelyNeedsExplicitSizing) return null
-
-  if (!dims) {
-    return {
-      needsClarification: true,
-      message: 'This project usually needs exact sizing to avoid bad cuts or awkward proportions.',
-      questions: [
-        'What finished height do you want?',
-        'What finished width and length do you want?',
-        'Any max size limits from your room or doorway?',
-      ],
-    }
-  }
-
-  if (hasVagueSizeLanguage(dims) && !hasNumericMeasurement) {
-    return {
-      needsClarification: true,
-      message: 'Your sizing sounds approximate, and exact dimensions will change the cut list and hardware choices.',
-      questions: [
-        'Target height (in or cm)?',
-        'Target width and length (in or cm)?',
-        'Do you want exact dimensions or an acceptable range?',
-      ],
-    }
-  }
-
-  return null
-}
 
 function buildUserMessage(projectIdea, designDescription, dimensions, materialsAccess, experienceLevel, media) {
   const parts = [
@@ -66,7 +16,8 @@ function buildUserMessage(projectIdea, designDescription, dimensions, materialsA
     experienceLevel ? `Experience level: ${experienceLevel}` : null,
   ].filter(Boolean)
 
-  const content = [{ type: 'text', text: parts.join('\n') }]
+  const userText = parts.join('\n')
+  const content = [{ type: 'text', text: userText }]
 
   const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
   if (media && media.length) {
@@ -88,6 +39,16 @@ function buildUserMessage(projectIdea, designDescription, dimensions, materialsA
   return content
 }
 
+async function fetchAssistantText(anthropic, system, content) {
+  const message = await anthropic.messages.create({
+    model: ANTHROPIC_MODEL_GUIDE_GENERATION,
+    max_tokens: 8192,
+    system,
+    messages: [{ role: 'user', content }],
+  })
+  return message.content.find((b) => b.type === 'text')?.text || ''
+}
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*')
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS')
@@ -102,17 +63,20 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { projectIdea, designDescription, dimensions, materialsAccess, experienceLevel, media } = req.body || {}
+    let body = req.body || {}
+    if (typeof body === 'string') {
+      try {
+        body = JSON.parse(body)
+      } catch {
+        return res.status(400).json({ error: 'Invalid JSON body' })
+      }
+    }
+    const { projectIdea, designDescription, dimensions, materialsAccess, experienceLevel, media } = body
     if (!projectIdea) {
       return res.status(400).json({ error: 'projectIdea is required' })
     }
     if (!apiKey) {
       return res.status(500).json({ error: 'ANTHROPIC_API_KEY is not set' })
-    }
-
-    const clarification = maybeNeedsClarification(projectIdea, dimensions)
-    if (clarification) {
-      return res.status(200).json(clarification)
     }
 
     const anthropic = new Anthropic({ apiKey })
@@ -125,21 +89,37 @@ export default async function handler(req, res) {
       media || [],
     )
 
-    const message = await anthropic.messages.create({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 8192,
-      system: GENERATE_SYSTEM_PROMPT,
-      messages: [{ role: 'user', content }],
-    })
+    let text = await fetchAssistantText(anthropic, GENERATE_SYSTEM_PROMPT, content)
+    console.log('[api/generate] first Anthropic raw text (full):', text)
 
-    const text = message.content.find((b) => b.type === 'text')?.text || '{}'
-    let guide
-    try {
-      guide = JSON.parse(text.trim())
-    } catch {
-      guide = { title: null, summary: { materials: [], tools: [] }, steps: [{ number: 1, title: 'Instructions', body: text }] }
+    let guide = parseCompleteGuideFromModelText(text)
+    console.log(
+      '[api/generate] first parseCompleteGuideFromModelText:',
+      guide === null ? 'null' : 'guide',
+    )
+
+    if (!guide) {
+      text = await fetchAssistantText(anthropic, GENERATE_SYSTEM_PROMPT_RETRY, content)
+      console.log('[api/generate] retry Anthropic raw text (full):', text)
+
+      guide = parseCompleteGuideFromModelText(text)
+      console.log(
+        '[api/generate] retry parseCompleteGuideFromModelText:',
+        guide === null ? 'null' : 'guide',
+      )
     }
-    if (!guide.title && guide.summary) guide.title = null
+
+    if (!guide) {
+      return res.status(500).json({ error: 'Could not generate a complete guide. Try again.' })
+    }
+
+    guide = omitLegacyPartialGuideFields(guide)
+    guide = applyShowVideoToGuide(guide, experienceLevel)
+
+    const costEstimate = await fetchCostEstimateForGuide(anthropic, projectIdea, guide)
+    console.log('[costEstimate] result in api/generate:', JSON.stringify(costEstimate))
+    guide = { ...guide, costEstimate: costEstimate ?? null }
+
     return res.status(200).json(guide)
   } catch (err) {
     console.error(err)

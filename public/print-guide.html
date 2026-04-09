@@ -69,6 +69,20 @@
         margin: 0;
         white-space: pre-wrap;
       }
+      .step-actions {
+        margin: 0;
+        padding-left: 20px;
+      }
+      .step-actions li {
+        margin: 0 0 6px;
+      }
+      .step-protip {
+        margin: 8px 0 0;
+        padding-left: 10px;
+        border-left: 3px solid #c4a574;
+        font-size: 12px;
+        color: #444;
+      }
       .screen-only {
         margin-top: 18px;
         font-size: 12px;
@@ -108,8 +122,10 @@
 
         const title = String(payload.title || "Builder's guide");
         const projectIdea = String(payload.projectIdea || 'Not specified');
+        const dimensionsNotes = String(payload.dimensionsNotes || '').trim();
         const materials = Array.isArray(payload.materials) ? payload.materials : [];
         const tools = Array.isArray(payload.tools) ? payload.tools : [];
+        const assumptionsWeMade = Array.isArray(payload.assumptionsWeMade) ? payload.assumptionsWeMade : [];
         const steps = Array.isArray(payload.steps) ? payload.steps : [];
 
         const h1 = document.createElement('h1');
@@ -120,6 +136,26 @@
         meta.className = 'meta';
         meta.textContent = `Project: ${projectIdea}`;
         app.appendChild(meta);
+
+        if (dimensionsNotes) {
+          const dim = document.createElement('p');
+          dim.className = 'meta';
+          dim.textContent = `Dimensions: ${dimensionsNotes}`;
+          app.appendChild(dim);
+        }
+
+        if (assumptionsWeMade.length) {
+          const ah = document.createElement('h2');
+          ah.textContent = 'Assumptions we made';
+          app.appendChild(ah);
+          const ulA = document.createElement('ul');
+          assumptionsWeMade.forEach((line) => {
+            const li = document.createElement('li');
+            li.textContent = String(line);
+            ulA.appendChild(li);
+          });
+          app.appendChild(ulA);
+        }
 
         const topGrid = document.createElement('section');
         topGrid.className = 'top-grid';
@@ -170,10 +206,29 @@
             titleEl.textContent = stepTitle ? `Step ${number}: ${stepTitle}` : `Step ${number}`;
             sec.appendChild(titleEl);
 
-            const body = document.createElement('p');
-            body.className = 'step-body';
-            body.textContent = step && step.body ? String(step.body) : '';
-            sec.appendChild(body);
+            const actions = step && Array.isArray(step.actions) ? step.actions : null;
+            if (actions && actions.length) {
+              const ol = document.createElement('ol');
+              ol.className = 'step-actions';
+              actions.forEach((line) => {
+                const li = document.createElement('li');
+                li.textContent = line != null ? String(line) : '';
+                ol.appendChild(li);
+              });
+              sec.appendChild(ol);
+            } else {
+              const body = document.createElement('p');
+              body.className = 'step-body';
+              body.textContent =
+                step && step.body ? String(step.body) : '';
+              sec.appendChild(body);
+            }
+            if (step && step.proTip && String(step.proTip).trim()) {
+              const tip = document.createElement('p');
+              tip.className = 'step-protip';
+              tip.textContent = 'Pro tip: ' + String(step.proTip).trim();
+              sec.appendChild(tip);
+            }
 
             app.appendChild(sec);
           });

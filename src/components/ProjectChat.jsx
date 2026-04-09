@@ -21,12 +21,19 @@ export default function ProjectChat({ projectIdea, guide }) {
     setMessages((prev) => [...prev, userMessage])
     setLoading(true)
     try {
+      const safeGuide = guide
+        ? {
+            title: guide.title,
+            summary: guide.summary,
+            steps: guide.steps,
+          }
+        : { summary: {}, steps: [] }
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           projectIdea: projectIdea || '',
-          guide: guide || { summary: {}, steps: [] },
+          guide: safeGuide,
           messages: [...messages, userMessage],
         }),
       })

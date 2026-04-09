@@ -34,6 +34,7 @@ export async function saveProject(uid, projectIdea, guide) {
     userId: uid,
     projectIdea,
     guide,
+    ...(guide?.costEstimate ? { costEstimate: guide.costEstimate } : {}),
     createdAt: serverTimestamp(),
   })
   return ref.id

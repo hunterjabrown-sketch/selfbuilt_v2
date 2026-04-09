@@ -3,7 +3,7 @@ import { useAuth } from '../contexts/AuthContext'
 import { getProjects, deleteProject, projectDisplayTitle } from '../lib/projects'
 import Step4Guide from './Step4Guide'
 
-export default function SavedProjects({ onStartNew }) {
+export default function SavedProjects({ onStartNew, experienceLevel = '' }) {
   const { user } = useAuth()
   const [projects, setProjects] = useState([])
   const [loading, setLoading] = useState(true)
@@ -40,6 +40,14 @@ export default function SavedProjects({ onStartNew }) {
     }
   }
 
+  const handleGuideUpdate = (nextGuide) => {
+    setViewing((v) => {
+      if (!v) return null
+      setProjects((prev) => prev.map((p) => (p.id === v.id ? { ...p, guide: nextGuide } : p)))
+      return { ...v, guide: nextGuide }
+    })
+  }
+
   if (viewing) {
     return (
       <section className="space-y-8">
@@ -50,7 +58,14 @@ export default function SavedProjects({ onStartNew }) {
         >
           ← Back to saved list
         </button>
-        <Step4Guide guide={viewing.guide} projectIdea={viewing.projectIdea} onStartOver={() => { setViewing(null); onStartNew?.() }} />
+        <Step4Guide
+          guide={viewing.guide}
+          projectIdea={viewing.projectIdea}
+          savedProjectId={viewing.id}
+          experienceLevel={experienceLevel}
+          onGuideChange={handleGuideUpdate}
+          onStartOver={() => { setViewing(null); onStartNew?.() }}
+        />
       </section>
     )
   }

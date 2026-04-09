@@ -1,11 +1,29 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import Logo from './Logo'
 import ProfileModal from './ProfileModal'
 
-export default function Header({ onOpenSaved, currentView, hasSidebar, sidebarOpen, onToggleSidebar, onProfileSaved }) {
+export default function Header({
+  onOpenSaved,
+  currentView,
+  hasSidebar,
+  sidebarOpen,
+  onToggleSidebar,
+  onProfileSaved,
+  profileOpenTrigger = 0,
+  profilePostTermsIntro = false,
+  onProfileIntroDismiss,
+}) {
   const { user, loading, signInWithGoogle } = useAuth()
   const [profileOpen, setProfileOpen] = useState(false)
+  const lastProfileTrigger = useRef(0)
+
+  useEffect(() => {
+    if (profileOpenTrigger > lastProfileTrigger.current) {
+      lastProfileTrigger.current = profileOpenTrigger
+      setProfileOpen(true)
+    }
+  }, [profileOpenTrigger])
 
   return (
     <header className="flex min-h-16 shrink-0 items-center border-b border-outline-variant/20 bg-surface py-2 sm:py-0">
@@ -70,7 +88,15 @@ export default function Header({ onOpenSaved, currentView, hasSidebar, sidebarOp
           )}
         </div>
       </div>
-      <ProfileModal isOpen={profileOpen} onClose={() => setProfileOpen(false)} onSaved={onProfileSaved} />
+      <ProfileModal
+        isOpen={profileOpen}
+        onClose={() => {
+          setProfileOpen(false)
+          onProfileIntroDismiss?.()
+        }}
+        onSaved={onProfileSaved}
+        postTermsIntro={profilePostTermsIntro}
+      />
     </header>
   )
 }

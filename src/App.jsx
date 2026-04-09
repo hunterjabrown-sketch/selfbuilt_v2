@@ -14,7 +14,8 @@ import TermsGate from './components/TermsGate'
 
 const STEPS = { greeting: 1, followUp: 2, generating: 3, guide: 4 }
 const STORAGE_KEY = 'selfbuilt_guide'
-const REQUIRED_TERMS_VERSION = '1'
+/** Bump when terms change; users below this must accept again (one-time per bump). */
+const REQUIRED_TERMS_VERSION = '2'
 
 function loadPersisted() {
   try {
@@ -42,12 +43,13 @@ function AppContent() {
   const [selectedSaved, setSelectedSaved] = useState(null) // { id, projectIdea, guide } when viewing a saved project
   const [step, setStep] = useState(STEPS.greeting)
   const [profileFirstName, setProfileFirstName] = useState('')
+  /** From Firestore profile; used when generating guides (not collected on the design step). */
+  const [experienceLevel, setExperienceLevel] = useState('')
   const [projectIdea, setProjectIdea] = useState('')
   const [answers, setAnswers] = useState({
     designDescription: '',
     dimensions: '',
     materialsAccess: '',
-    experienceLevel: '',
   })
   const [media, setMedia] = useState([])
   const [guide, setGuide] = useState(null)
@@ -55,11 +57,14 @@ function AppContent() {
   const [savedListVersion, setSavedListVersion] = useState(0)
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [saveError, setSaveError] = useState(null)
+  const [generationStatus, setGenerationStatus] = useState('idle')
+  const [generationError, setGenerationError] = useState('')
   const [profileVersion, setProfileVersion] = useState(0)
-  const [clarification, setClarification] = useState(null)
   /** null = loading profile; true = terms accepted; false = must show Terms gate */
   const [termsAccepted, setTermsAccepted] = useState(null)
-
+  /** Incremented when terms are accepted so Header opens Profile to collect name / experience. */
+  const [profileOpenTrigger, setProfileOpenTrigger] = useState(0)
+  const [profilePostTermsIntro, setProfilePostTermsIntro] = useState(false)
   // Restore previous guide only on refresh when already logged in (not on first sign-in)
   const prevUserRef = useRef(undefined)
   useEffect(() => {
@@ -86,6 +91,7 @@ function AppContent() {
   useEffect(() => {
     if (!user) {
       setProfileFirstName('')
+      setExperienceLevel('')
       setTermsAccepted(null)
       return
     }
@@ -98,12 +104,14 @@ function AppContent() {
         const name = profile?.displayName || user.displayName || ''
         const first = name.trim().split(/\s+/)[0] || ''
         setProfileFirstName(first ? first.charAt(0).toUpperCase() + first.slice(1).toLowerCase() : '')
+        setExperienceLevel(profile?.experienceLevel ?? '')
       })
       .catch(() => {
         setTermsAccepted(false)
         const name = user.displayName || ''
         const first = name.trim().split(/\s+/)[0] || ''
         setProfileFirstName(first ? first.charAt(0).toUpperCase() + first.slice(1).toLowerCase() : '')
+        setExperienceLevel('')
       })
   }, [user, profileVersion])
 
@@ -115,8 +123,8 @@ function AppContent() {
   const mainRef = useRef(null)
   useEffect(() => {
     const onGuideOrProject = (step === STEPS.guide && guide) || selectedSaved
-    const onNewProject = step === STEPS.greeting
-    if (onGuideOrProject || onNewProject) {
+    const onProjectFlow = step === STEPS.greeting || step === STEPS.followUp
+    if (onGuideOrProject || onProjectFlow) {
       mainRef.current?.scrollTo({ top: 0, behavior: 'instant' })
     }
   }, [step, guide, selectedSaved])
@@ -137,26 +145,28 @@ function AppContent() {
 
   const handleProjectSubmit = (idea) => {
     setProjectIdea(idea)
-    setClarification(null)
+    setError(null)
     setStep(STEPS.followUp)
   }
 
   const handleFollowUpSubmit = (nextAnswers, nextMedia) => {
     setAnswers(nextAnswers)
     setMedia(nextMedia)
-    setClarification(null)
     setStep(STEPS.generating)
+    setGenerationStatus('running')
+    setGenerationError('')
     setError(null)
-    generateGuide(projectIdea, nextAnswers, nextMedia)
+    generateGuide(nextAnswers, nextMedia)
   }
 
-  async function generateGuide(idea, ans, files) {
+  async function generateGuide(ans, files) {
+    const idea = projectIdea
     const payload = {
       projectIdea: idea,
       designDescription: ans.designDescription || undefined,
       dimensions: ans.dimensions || undefined,
       materialsAccess: ans.materialsAccess || undefined,
-      experienceLevel: ans.experienceLevel || undefined,
+      experienceLevel: experienceLevel || undefined,
       media: files.map((f) => ({ type: 'image', mediaType: f.type, data: f.data })),
     }
     try {
@@ -178,37 +188,30 @@ function AppContent() {
       if (!res.ok) throw new Error(data.error || 'Request failed')
       if (data.outOfScope && data.message) {
         setError(data.message)
-        setStep(STEPS.followUp)
-        return
-      }
-      if (data.needsClarification) {
-        setClarification({
-          message: data.message || 'We need a few more details before generating a reliable guide.',
-          questions: Array.isArray(data.questions) ? data.questions : [],
-        })
-        setError(null)
-        setStep(STEPS.followUp)
+        setGenerationStatus('error')
+        setGenerationError(data.message)
         return
       }
       if (!Array.isArray(data.steps) || data.steps.length === 0) {
-        setClarification({
-          message: 'The guide response came back incomplete. Please add a little more detail so we can generate a better plan.',
-          questions: [
-            'What exact part of the house or room is this in?',
-            'What are the key dimensions?',
-            'What materials or tools do you already have?',
-          ],
-        })
-        setStep(STEPS.followUp)
+        const msg = 'Could not generate a complete guide. Try again.'
+        setError(msg)
+        setGenerationStatus('error')
+        setGenerationError(msg)
         return
       }
-      setGuide(data)
-      setStep(STEPS.guide)
-      savePersisted(STEPS.guide, data)
+      const guideWithMeta = {
+        ...data,
+        _client: {
+          dimensionsInput: (ans.dimensions || '').trim(),
+        },
+      }
+      setGuide(guideWithMeta)
+      setGenerationStatus('success')
+      savePersisted(STEPS.guide, guideWithMeta)
       if (user) {
         setSaveError(null)
         try {
-          await saveProject(user.uid, idea, data)
+          await saveProject(user.uid, idea, guideWithMeta)
           setSavedListVersion((v) => v + 1)
         } catch (err) {
           console.error('Save to Saved projects failed:', err)
@@ -219,8 +222,10 @@ function AppContent() {
         }
       }
     } catch (err) {
-      setError(err.message)
-      setStep(STEPS.followUp)
+      const msg = err.message || 'Failed to generate guide'
+      setError(msg)
+      setGenerationStatus('error')
+      setGenerationError(msg)
     }
   }
 
@@ -228,12 +233,13 @@ function AppContent() {
     setSelectedSaved(null)
     setStep(STEPS.greeting)
     setProjectIdea('')
-    setAnswers({ designDescription: '', dimensions: '', materialsAccess: '', experienceLevel: '' })
+    setAnswers({ designDescription: '', dimensions: '', materialsAccess: '' })
     setMedia([])
     setGuide(null)
     setError(null)
     setSaveError(null)
-    setClarification(null)
+    setGenerationStatus('idle')
+    setGenerationError('')
     savePersisted(STEPS.guide, null)
   }
 
@@ -246,18 +252,29 @@ function AppContent() {
     setView('main')
     setStep(STEPS.greeting)
     setProjectIdea('')
-    setAnswers({ designDescription: '', dimensions: '', materialsAccess: '', experienceLevel: '' })
+    setAnswers({ designDescription: '', dimensions: '', materialsAccess: '' })
     setMedia([])
     setGuide(null)
     setError(null)
-    setClarification(null)
+    setGenerationStatus('idle')
+    setGenerationError('')
     savePersisted(STEPS.guide, null)
   }
   const handleSelectSavedProject = (project) => setSelectedSaved(project)
+
+  const handleGuideUpdate = (nextGuide) => {
+    setGuide(nextGuide)
+    savePersisted(STEPS.guide, nextGuide)
+  }
+
+  const handleSavedProjectGuideUpdate = (nextGuide) => {
+    setSelectedSaved((s) => (s ? { ...s, guide: nextGuide } : null))
+  }
+
   const showTermsGate = termsAccepted === false
 
   return (
-    <div className="relative flex min-h-screen bg-surface font-body text-on-surface">
+    <div className="relative flex h-screen min-h-0 overflow-hidden bg-surface font-body text-on-surface">
       {user && sidebarOpen && (
         <Sidebar
           selectedProjectId={selectedSaved?.id ?? (step === STEPS.guide && guide ? 'current' : null)}
@@ -269,7 +286,7 @@ function AppContent() {
           currentProject={step === STEPS.guide && guide && projectIdea ? { id: 'current', projectIdea, guide } : null}
         />
       )}
-      <div className="flex min-w-0 flex-1 flex-col">
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col">
         <Header
           onOpenSaved={() => setView('saved')}
           currentView={view}
@@ -277,6 +294,9 @@ function AppContent() {
           sidebarOpen={sidebarOpen}
           onToggleSidebar={() => setSidebarOpen((o) => !o)}
           onProfileSaved={() => setProfileVersion((v) => v + 1)}
+          profileOpenTrigger={profileOpenTrigger}
+          profilePostTermsIntro={profilePostTermsIntro}
+          onProfileIntroDismiss={() => setProfilePostTermsIntro(false)}
         />
         {authError && (
           <div className="bg-amber-100 border-b border-amber-300 px-4 py-3 text-amber-900">
@@ -292,18 +312,21 @@ function AppContent() {
             </div>
           </div>
         )}
-        <main ref={mainRef} className="flex-1 overflow-auto bg-surface">
+        <main ref={mainRef} className="min-h-0 flex-1 overflow-auto bg-surface">
           {selectedSaved ? (
             <div className="mx-auto max-w-5xl px-6 py-10 sm:px-8 sm:py-14">
               <Step4Guide
                 guide={selectedSaved.guide}
                 projectIdea={selectedSaved.projectIdea}
+                savedProjectId={selectedSaved.id}
+                experienceLevel={experienceLevel}
+                onGuideChange={handleSavedProjectGuideUpdate}
                 onStartOver={handleNewProject}
               />
             </div>
           ) : view === 'saved' ? (
             <div className="mx-auto max-w-5xl px-6 py-10 sm:px-8 sm:py-14">
-              <SavedProjects onStartNew={() => setView('main')} />
+              <SavedProjects onStartNew={() => setView('main')} experienceLevel={experienceLevel} />
             </div>
           ) : (
             <div className="mx-auto max-w-5xl px-6 py-10 sm:px-8 sm:py-14">
@@ -317,23 +340,53 @@ function AppContent() {
                   initialMedia={media}
                   onSubmit={handleFollowUpSubmit}
                   error={error}
-                  clarification={clarification}
                 />
               )}
-              {step === STEPS.generating && <Step3Generating />}
+              {step === STEPS.generating && (
+                <Step3Generating
+                  generationStatus={generationStatus}
+                  generationError={generationError}
+                  onComplete={() => {
+                    setStep(STEPS.guide)
+                    setGenerationStatus('idle')
+                    setGenerationError('')
+                  }}
+                  onBack={() => {
+                    setStep(STEPS.followUp)
+                    setGenerationStatus('idle')
+                    setGenerationError('')
+                  }}
+                />
+              )}
               {step === STEPS.guide && guide && (
                 <>
                   {saveError && (
                     <p className="mb-4 rounded-xl border border-amber-200/80 bg-amber-50 px-4 py-3 text-sm text-amber-900">{saveError}</p>
                   )}
-                  <Step4Guide guide={guide} projectIdea={projectIdea} onStartOver={handleStartOver} />
+                  <Step4Guide
+                    guide={guide}
+                    projectIdea={projectIdea}
+                    experienceLevel={experienceLevel}
+                    onGuideChange={handleGuideUpdate}
+                    onStartOver={handleStartOver}
+                  />
                 </>
               )}
             </div>
           )}
         </main>
       </div>
-      {showTermsGate && <TermsGate user={user} onAccepted={() => { setTermsAccepted(true); setProfileVersion((v) => v + 1) }} />}
+      {showTermsGate && (
+        <TermsGate
+          user={user}
+          onAccepted={() => {
+            setTermsAccepted(true)
+            setProfileVersion((v) => v + 1)
+            setProfilePostTermsIntro(true)
+            setProfileOpenTrigger((t) => t + 1)
+          }}
+        />
+      )}
     </div>
   )
 }

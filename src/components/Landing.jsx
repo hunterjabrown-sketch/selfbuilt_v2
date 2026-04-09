@@ -152,8 +152,8 @@ export default function Landing() {
                     &ldquo;The precision of the blueprints saved me $4,200 on my deck remodel. It was like having a master builder over my
                     shoulder.&rdquo;
                   </p>
-                  <span className="text-sm font-bold uppercase tracking-widest text-secondary">
-                    — Henry C., Homeowner
+                  <span className="mt-1 block text-sm font-bold uppercase tracking-widest text-secondary">
+                    Henry C., Homeowner
                   </span>
                 </div>
               </div>
@@ -390,7 +390,7 @@ export default function Landing() {
                   </span>
                   <h3 className="font-headline mb-4 text-3xl font-bold">Steps you can follow</h3>
                   <p className="text-lg leading-relaxed text-on-surface-variant">
-                    One step at a time, in order, plus a project assistant when you need a phrase decoded or a step clarified.
+                    One step at a time, in order, plus a project assistant when you need a phrase decoded or a step explained.
                   </p>
                 </div>
                 <div className="relative hidden lg:block">

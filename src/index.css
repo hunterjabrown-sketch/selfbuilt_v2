@@ -81,6 +81,32 @@
   .sb-card {
     @apply rounded-2xl border border-outline-variant/15 bg-surface-container-lowest shadow-sm;
   }
+
+  /* Custom checkbox: solid green when checked (no Chrome hover dim). Bold white tick on dark green fill. */
+  .sb-step-checkbox {
+    appearance: none;
+    -webkit-appearance: none;
+    margin: 0;
+    width: 1.25rem;
+    height: 1.25rem;
+    flex-shrink: 0;
+    cursor: pointer;
+    border-radius: 0.25rem;
+    border: 2px solid var(--color-outline-variant);
+    background-color: var(--color-surface-container-lowest);
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 0.8rem;
+  }
+  .sb-step-checkbox:checked {
+    border-color: var(--color-secondary);
+    background-color: var(--color-secondary);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='%23ffffff' stroke-width='3.25' stroke-linecap='round' stroke-linejoin='round' d='M6.25 12.25l3.75 3.75 8-8.25'/%3E%3C/svg%3E");
+  }
+  .sb-step-checkbox:focus-visible {
+    outline: 2px solid color-mix(in srgb, var(--color-secondary) 45%, transparent);
+    outline-offset: 2px;
+  }
 }
 
 body {

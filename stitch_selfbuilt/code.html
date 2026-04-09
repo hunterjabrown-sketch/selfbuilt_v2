@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+
+<html class="scroll-smooth" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SelfBuilt | Professional results for every DIYer.</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+        .ghost-shadow {
+            box-shadow: 0px 20px 40px rgba(27, 27, 29, 0.05);
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "on-primary-container": "#79849a",
+                        "on-secondary-fixed": "#002116",
+                        "primary-fixed": "#d8e3fb",
+                        "on-tertiary-fixed-variant": "#004395",
+                        "surface-container-high": "#eae7e9",
+                        "tertiary": "#000000",
+                        "surface-container-low": "#f6f3f5",
+                        "secondary": "#1b6b51",
+                        "primary": "#000000",
+                        "on-primary-fixed-variant": "#3c475a",
+                        "inverse-primary": "#bcc7de",
+                        "on-background": "#1b1b1d",
+                        "primary-fixed-dim": "#bcc7de",
+                        "outline-variant": "#c6c6cd",
+                        "inverse-surface": "#303032",
+                        "on-error-container": "#93000a",
+                        "surface-container": "#f0edef",
+                        "secondary-fixed-dim": "#8bd6b6",
+                        "outline": "#76777d",
+                        "on-primary-fixed": "#111c2d",
+                        "surface-dim": "#dcd9db",
+                        "on-tertiary-container": "#3980f4",
+                        "on-tertiary-fixed": "#001a42",
+                        "on-primary": "#ffffff",
+                        "tertiary-fixed-dim": "#adc6ff",
+                        "surface": "#fcf8fa",
+                        "background": "#fcf8fa",
+                        "on-error": "#ffffff",
+                        "secondary-fixed": "#a6f2d1",
+                        "secondary-container": "#a6f2d1",
+                        "inverse-on-surface": "#f3f0f2",
+                        "surface-container-lowest": "#ffffff",
+                        "on-tertiary": "#ffffff",
+                        "on-secondary": "#ffffff",
+                        "surface-tint": "#545f73",
+                        "error": "#ba1a1a",
+                        "surface-container-highest": "#e4e2e4",
+                        "on-surface-variant": "#45464d",
+                        "surface-variant": "#e4e2e4",
+                        "error-container": "#ffdad6",
+                        "primary-container": "#111c2d",
+                        "on-surface": "#1b1b1d",
+                        "tertiary-fixed": "#d8e2ff",
+                        "tertiary-container": "#001a42",
+                        "on-secondary-fixed-variant": "#00513b",
+                        "on-secondary-container": "#237157",
+                        "surface-bright": "#fcf8fa"
+                    },
+                    fontFamily: {
+                        "headline": ["Manrope"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    },
+                    borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-surface text-on-surface font-body selection:bg-secondary-fixed selection:text-on-secondary-fixed">
+<!-- TopNavBar -->
+<nav class="w-full top-0 sticky z-50 transition-all duration-300 bg-[#fcf8fa] dark:bg-slate-950 no-line tonal-shift bg-[#f6f3f5] dark:bg-slate-900">
+<div class="flex justify-between items-center max-w-7xl mx-auto px-8 py-4">
+<div class="text-xl font-bold tracking-tighter text-[#0F172A] dark:text-slate-50 font-headline">
+            SelfBuilt
+        </div>
+<div class="hidden md:flex items-center gap-10 font-['Manrope'] font-medium text-sm tracking-tight">
+<a class="text-[#0F172A] dark:text-white font-semibold border-b-2 border-[#1b6b51] py-1" href="#">Product</a>
+<a class="text-slate-600 dark:text-slate-400 hover:text-[#0F172A] dark:hover:text-white transition-colors py-1" href="#">Guides</a>
+<a class="text-slate-600 dark:text-slate-400 hover:text-[#0F172A] dark:hover:text-white transition-colors py-1" href="#">Community</a>
+</div>
+<div class="flex items-center gap-4">
+<button class="px-6 py-2.5 bg-primary text-on-primary rounded-xl font-medium text-sm hover:opacity-90 transition-all">
+                Get Started
+            </button>
+</div>
+</div>
+</nav>
+<main>
+<!-- Hero Section -->
+<section class="relative pt-24 pb-32 overflow-hidden">
+<div class="max-w-7xl mx-auto px-8 grid grid-cols-1 lg:grid-cols-12 gap-16 items-center">
+<div class="lg:col-span-7 z-10">
+<h1 class="font-headline text-primary text-6xl md:text-7xl font-extrabold tracking-tighter leading-[1.05] mb-8">
+                    Build what you want, <br/><span class="text-secondary">for real.</span>
+</h1>
+<p class="font-body text-xl text-on-surface-variant max-w-xl leading-relaxed mb-10">
+                    Take a photo/video, describe your project, and get precision blueprints, tool lists, and pro-grade video guides. <span class="text-primary font-bold">Skip the contractor and save thousands.</span>
+</p>
+<div class="flex flex-wrap gap-4">
+<button class="px-8 py-4 bg-secondary text-on-secondary rounded-xl font-bold text-lg hover:scale-[0.98] transition-transform flex items-center gap-3 shadow-lg shadow-secondary/20">
+                        Start Your Project
+                        <span class="material-symbols-outlined text-xl">arrow_forward</span>
+</button>
+<button class="px-8 py-4 bg-surface-container-highest text-primary rounded-xl font-bold text-lg border border-outline-variant/10 hover:bg-surface-container-high transition-colors">
+                        Watch the Demo
+                    </button>
+</div>
+</div>
+<div class="lg:col-span-5 relative group">
+<div class="absolute -inset-4 bg-secondary/5 rounded-[2rem] -rotate-2 group-hover:rotate-0 transition-transform duration-700"></div>
+<div class="relative overflow-hidden rounded-[1.5rem] ghost-shadow aspect-[4/5] lg:aspect-square">
+<img alt="Professional craftsman working on a precise wooden joinery project" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA9PwbC2XKeHx2EOWplxgbPzV-ue6YPiB8dUNmbjsvl1x4CFgyeLXkmIG9wB9hHDZh0nWb2OEqStC71d6l5zHv9JF3rgkLaQLIS5uKZ85Z9Dqsn1By7YLuoMFQJHmJ4tpZ0DkMQIj-2yp3gdeVrGTCYPdkhtrhnp_C2FFloT1v78D-b4ibWg8NgL9DSarJDVebPjTW-XvfaR-qfO9Zg4Qz_qMMUdI443us6nx3meZnc_O0l10WEzAvFN3DC5hln-BWPtVEFu-1vsaI"/>
+<div class="absolute bottom-6 left-6 right-6 glass-panel p-6 rounded-xl border border-white/20">
+<p class="font-headline text-on-surface font-semibold text-lg leading-tight mb-2 italic">
+                            "The precision of the blueprints saved me $4,200 on my deck remodel. It was like having a master builder over my shoulder."
+                        </p>
+<span class="text-secondary font-bold text-sm tracking-widest uppercase">Sarah J., Homeowner</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- App Preview Section -->
+<section class="bg-surface-container-low py-32">
+<div class="max-w-7xl mx-auto px-8">
+<div class="text-center mb-20">
+<h2 class="font-headline text-4xl md:text-5xl font-bold tracking-tight mb-6">Professional results for every DIYer.</h2>
+<div class="inline-flex items-center gap-2 px-4 py-2 bg-secondary/10 text-secondary rounded-full font-bold text-sm mb-6">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">savings</span>
+                    Skip the contractor and save thousands
+                </div>
+<p class="text-on-surface-variant text-lg max-w-2xl mx-auto font-body">Our precision-engineered interface transforms complex architectural requirements into actionable, bite-sized tasks for any skill level.</p>
+</div>
+<div class="bg-surface-container-lowest rounded-[2rem] ghost-shadow overflow-hidden border border-outline-variant/15 max-w-6xl mx-auto">
+<!-- App Interface Header -->
+<div class="flex items-center justify-between px-8 py-5 border-b border-surface-container-high bg-surface-container-low/50">
+<div class="flex items-center gap-3">
+<div class="w-3 h-3 rounded-full bg-error/20"></div>
+<div class="w-3 h-3 rounded-full bg-secondary-container"></div>
+<div class="w-3 h-3 rounded-full bg-primary-fixed"></div>
+<span class="ml-4 font-label text-xs font-bold uppercase tracking-widest text-outline">Project: Floating Shelf Guide</span>
+</div>
+<div class="flex items-center gap-6">
+<span class="text-secondary font-bold text-sm flex items-center gap-2">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+                            Blueprint Verified
+                        </span>
+</div>
+</div>
+<div class="grid grid-cols-12 h-[600px]">
+<!-- Materials Sidebar -->
+<div class="col-span-4 bg-surface-container border-r border-surface-container-high p-8 flex flex-col gap-8">
+<div>
+<span class="text-[10px] font-extrabold text-secondary uppercase tracking-[0.2em] block mb-6">Materials Needed</span>
+<ul class="space-y-4">
+<li class="flex items-center justify-between p-4 bg-white rounded-xl shadow-sm">
+<span class="text-sm font-medium">2" x 10" Pine Board</span>
+<span class="font-bold text-secondary">4ft</span>
+</li>
+<li class="flex items-center justify-between p-4 bg-white rounded-xl shadow-sm">
+<span class="text-sm font-medium">Heavy Duty Brackets</span>
+<span class="font-bold text-secondary">2x</span>
+</li>
+<li class="flex items-center justify-between p-4 bg-white rounded-xl shadow-sm">
+<span class="text-sm font-medium">3" Wood Screws</span>
+<span class="font-bold text-secondary">12x</span>
+</li>
+</ul>
+</div>
+<div class="mt-auto p-5 bg-primary text-on-primary rounded-xl">
+<p class="text-[10px] font-bold opacity-60 uppercase tracking-widest mb-1">Contractor Savings</p>
+<p class="text-3xl font-extrabold tracking-tighter text-secondary-fixed">$450.00</p>
+<p class="text-[10px] mt-2 opacity-60 italic">Based on average local quotes</p>
+</div>
+</div>
+<!-- Main Guide Content -->
+<div class="col-span-8 bg-surface p-10 flex flex-col">
+<div class="flex items-center justify-between mb-8">
+<div>
+<h3 class="font-headline font-extrabold text-2xl">Mark and Measure</h3>
+<p class="text-secondary font-bold text-sm mt-1">Step 1 of 8</p>
+</div>
+<div class="w-32 h-1.5 bg-surface-container-high rounded-full">
+<div class="h-full w-[12.5%] bg-secondary rounded-full"></div>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-8 flex-1">
+<div class="relative rounded-2xl overflow-hidden border border-outline-variant/10 bg-surface-container shadow-inner">
+<img alt="Woodworking measurement detail" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDYe-BI7FHVchFp1b2bowuU6utbS6soAI4F2-4x3Ma7q8qzeN6aS8rqfNwT5qdKE7GI6Qr34Kz121sjK9BipuerQXHY07zCyJ9fJhETchpMNDOzJ57r2CfziWOK1BTukz0dhB8RTD8gt5sdKvXYbAOeD5ovmK0zCTTdfdQQHSLjHS9zIEsDicRr0hIm5jqrfSj-uuiJFNDGpKzKGV3HJIlx0Dsvn08JKBmUwYJB6XA6t6HFp2DZ8yW7-ceYuZIGlasC1LhFSSIZhGM"/>
+<div class="absolute inset-0 flex items-center justify-center">
+<div class="w-14 h-14 bg-white/90 rounded-full flex items-center justify-center shadow-lg cursor-pointer hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-secondary text-3xl" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+</div>
+</div>
+</div>
+<div class="flex flex-col">
+<p class="text-on-surface-variant text-lg leading-relaxed mb-8">
+                                    Use a speed square to mark two parallel lines 16 inches apart. This ensures your brackets align with the wall studs later. 
+                                </p>
+<div class="p-5 bg-secondary/5 rounded-2xl border border-secondary/10 mt-auto">
+<div class="flex items-center gap-3 mb-2 text-secondary">
+<span class="material-symbols-outlined text-sm">lightbulb</span>
+<span class="text-xs font-bold uppercase tracking-wider">Pro Tip</span>
+</div>
+<p class="text-sm text-on-surface-variant">Double-check your vertical level before marking. Even 1/16th of an inch matters for floating shelves.</p>
+</div>
+</div>
+</div>
+<div class="flex justify-end mt-10">
+<button class="px-10 py-4 bg-secondary text-on-secondary rounded-xl font-bold text-sm tracking-tight hover:opacity-90 transition-opacity flex items-center gap-2">
+                                Next Step
+                                <span class="material-symbols-outlined text-sm">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Features Bento Grid -->
+<section class="py-32 bg-surface">
+<div class="max-w-7xl mx-auto px-8">
+<div class="flex flex-col md:flex-row md:items-end justify-between mb-20 gap-8">
+<div class="max-w-xl">
+<span class="text-secondary font-bold font-label tracking-widest uppercase text-xs mb-4 block">Engineered for quality</span>
+<h2 class="font-headline text-5xl font-extrabold tracking-tighter">Built for Creators</h2>
+</div>
+<p class="text-on-surface-variant text-lg font-body md:max-w-xs">Everything you need to go from an idea to a finished structural reality.</p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-12 gap-6">
+<!-- Feature 1 -->
+<div class="md:col-span-8 group relative bg-surface-container-low rounded-[1.5rem] p-10 overflow-hidden border border-outline-variant/10 hover:bg-surface-container transition-colors">
+<div class="relative z-10 flex flex-col h-full">
+<span class="material-symbols-outlined text-secondary text-4xl mb-6" style="font-variation-settings: 'FILL' 1;">architecture</span>
+<h3 class="font-headline text-3xl font-bold mb-4">AI-First Engineering</h3>
+<p class="text-on-surface-variant text-lg max-w-md leading-relaxed">Our AI analyzes your space to ensure structural integrity and code compliance before you buy a single board.</p>
+</div>
+<img alt="Abstract visualization of architectural structural analysis" class="absolute top-0 right-0 h-full w-1/3 object-cover opacity-10 group-hover:opacity-20 transition-opacity duration-700" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCuFl9b5169G8KTZp3kmYzZmLuqHLYyXFC4Luc3D-t9Bd5mcEYLQsMj7Elb6LwU--ffGB3J91DhwL5aTW491-xYBQZ_Ucyd2lM4KOEeZ8MtETBFbJPZ1QITWWKOZPSByVSZTFWCgyKQ3mtnPU3LMgRgBctDK76-IxnQ0ARzkg4BQkKRUncTRP3ZP19KnthT9e9QSg5mAzkbPqXGgoa_QTNlxuxMBWQkxMh6eR5AU_pBkbF9vQJqMwUPgZYhvmr6NMnk_GBEVmdVAl8"/>
+</div>
+<!-- Feature 2 -->
+<div class="md:col-span-4 bg-primary text-on-primary rounded-[1.5rem] p-10 flex flex-col justify-between">
+<div>
+<span class="material-symbols-outlined text-secondary-fixed text-4xl mb-6" style="font-variation-settings: 'FILL' 1;">shopping_cart</span>
+<h3 class="font-headline text-2xl font-bold mb-4">Instant Cart</h3>
+<p class="text-on-primary/70 text-base">One-click tool and material shopping through our network of local suppliers.</p>
+</div>
+<div class="mt-8 pt-8 border-t border-white/10">
+<span class="text-secondary-fixed font-bold flex items-center gap-2">
+                            Save 15% on average
+                            <span class="material-symbols-outlined text-sm">north_east</span>
+</span>
+</div>
+</div>
+<!-- Feature 3 -->
+<div class="md:col-span-4 bg-secondary text-on-secondary rounded-[1.5rem] p-10 flex flex-col justify-between">
+<div>
+<span class="material-symbols-outlined text-on-secondary text-4xl mb-6" style="font-variation-settings: 'FILL' 1;">recycling</span>
+<h3 class="font-headline text-2xl font-bold mb-4">Waste Reduction</h3>
+<p class="text-on-secondary/80 text-base">We calculate the exact cuts to minimize leftover lumber and save on material costs.</p>
+</div>
+<div class="mt-8">
+<div class="h-1.5 w-full bg-white/20 rounded-full">
+<div class="h-full w-4/5 bg-secondary-fixed rounded-full"></div>
+</div>
+<span class="text-xs mt-2 block opacity-60">Avg. 22% less waste</span>
+</div>
+</div>
+<!-- Feature 4 -->
+<div class="md:col-span-8 bg-surface-container-high rounded-[1.5rem] p-10 flex items-center justify-between group overflow-hidden border border-outline-variant/20">
+<div class="max-w-md">
+<span class="material-symbols-outlined text-primary text-4xl mb-6" style="font-variation-settings: 'FILL' 1;">videocam</span>
+<h3 class="font-headline text-3xl font-bold mb-4">Pro-Grade Guides</h3>
+<p class="text-on-surface-variant text-lg leading-relaxed">Skip the generic tutorials. Get video guides curated specifically for your unique blueprint and toolset.</p>
+</div>
+<div class="hidden lg:block relative">
+<div class="w-48 h-48 rounded-full border-4 border-secondary/30 border-dashed animate-[spin_20s_linear_infinite] group-hover:scale-110 transition-transform"></div>
+<span class="material-symbols-outlined absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-secondary text-6xl">school</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- CTA / Final Trust Section -->
+<section class="py-40">
+<div class="max-w-4xl mx-auto px-8 text-center">
+<h2 class="font-headline text-5xl md:text-6xl font-extrabold tracking-tighter mb-8">Ready to save thousands?</h2>
+<p class="text-on-surface-variant text-xl mb-12 font-body max-w-2xl mx-auto">Join 15,000+ creators who are building with real confidence. No contractor required.</p>
+<button class="px-12 py-5 bg-secondary text-on-secondary rounded-xl font-bold text-xl hover:scale-[0.98] transition-all ghost-shadow shadow-xl shadow-secondary/30">
+                Start Your Project Now
+            </button>
+<p class="mt-8 font-label text-xs font-bold uppercase tracking-[0.2em] text-outline">Available for Desktop and iOS</p>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="w-full py-12 bg-[#f0edef] dark:bg-slate-900">
+<div class="flex flex-col md:flex-row justify-between items-center max-w-7xl mx-auto px-8 gap-6">
+<div class="flex flex-col items-center md:items-start gap-2">
+<span class="text-lg font-bold text-[#0F172A] dark:text-slate-50 font-headline">SelfBuilt</span>
+<p class="font-['Inter'] text-xs uppercase tracking-widest text-slate-500 text-center md:text-left">
+                © 2024 SelfBuilt. Build with confidence and architectural integrity.
+            </p>
+</div>
+<div class="flex items-center gap-8">
+<a class="font-['Inter'] text-xs uppercase tracking-widest text-slate-500 hover:text-[#0F172A] hover:underline transition-all" href="#">Privacy</a>
+<a class="font-['Inter'] text-xs uppercase tracking-widest text-slate-500 hover:text-[#0F172A] hover:underline transition-all" href="#">Terms</a>
+<a class="font-['Inter'] text-xs uppercase tracking-widest text-slate-500 hover:text-[#0F172A] hover:underline transition-all" href="#">Contact</a>
+</div>
+</div>
+</footer>
+</body></html>
