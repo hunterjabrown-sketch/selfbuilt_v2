@@ -29,3 +29,4 @@ assets/reference/exports/*.zip
 *.njsproj
 *.sln
 *.sw?
+.vercel
