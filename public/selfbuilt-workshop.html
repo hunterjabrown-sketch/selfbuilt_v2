@@ -1,0 +1,1519 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>SelfBuilt — Design workshop</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&display=swap" rel="stylesheet" />
+
+  <style>
+    /* =========================================================
+       SelfBuilt design tokens (mirrored from src/index.css)
+       ========================================================= */
+    :root {
+      --color-primary:                #000000;
+      --color-secondary:              #1b6b51;
+      --color-on-secondary:           #ffffff;
+      --color-secondary-container:    #a6f2d1;
+      --color-on-secondary-container: #237157;
+
+      --color-surface:                 #fcf8fa;
+      --color-surface-container-lowest:#ffffff;
+      --color-surface-container-low:   #f6f3f5;
+      --color-surface-container:       #f0edef;
+      --color-surface-container-high:  #eae7e9;
+      --color-surface-container-highest:#e4e2e4;
+      --color-surface-variant:         #e4e2e4;
+
+      --color-on-surface:              #1b1b1d;
+      --color-on-surface-variant:      #45464d;
+      --color-outline:                 #76777d;
+      --color-outline-variant:         #c6c6cd;
+
+      --font-headline: "Manrope", ui-sans-serif, system-ui, sans-serif;
+      --font-body:     "Inter", ui-sans-serif, system-ui, sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { height: 100%; margin: 0; }
+    body {
+      background: var(--color-surface);
+      color: var(--color-on-surface);
+      font-family: var(--font-body);
+      font-feature-settings: "rlig" 1, "calt" 1;
+      -webkit-font-smoothing: antialiased;
+    }
+    .material-symbols-outlined {
+      font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
+      vertical-align: middle;
+    }
+
+    /* =========================================================
+       Layout
+       ========================================================= */
+    .app {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    header.sb-header {
+      flex-shrink: 0;
+      min-height: 64px;
+      background: var(--color-surface);
+      border-bottom: 1px solid color-mix(in srgb, var(--color-outline-variant) 20%, transparent);
+      display: flex;
+      align-items: center;
+      padding: 8px 32px;
+    }
+    .sb-header .row {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .sb-logo {
+      font-family: var(--font-headline);
+      font-weight: 700;
+      letter-spacing: -0.04em;
+      color: var(--color-primary);
+      font-size: 24px;
+      line-height: 1;
+    }
+    .sb-tagline {
+      color: var(--color-on-surface-variant);
+      font-size: 14px;
+      font-weight: 500;
+    }
+    .sb-spacer { flex: 1; }
+    .sb-icon-btn {
+      width: 36px; height: 36px;
+      display: inline-flex; align-items: center; justify-content: center;
+      border-radius: 12px;
+      border: 1px solid color-mix(in srgb, var(--color-outline-variant) 30%, transparent);
+      background: var(--color-surface-container-lowest);
+      color: var(--color-on-surface-variant);
+      cursor: pointer;
+      transition: background 0.12s, color 0.12s, border-color 0.12s;
+    }
+    .sb-icon-btn:hover {
+      background: var(--color-surface-container-high);
+      color: var(--color-on-surface);
+      border-color: color-mix(in srgb, var(--color-secondary) 40%, transparent);
+    }
+    .sb-key-pill {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: var(--color-surface-container-low);
+      border: 1px solid color-mix(in srgb, var(--color-outline-variant) 25%, transparent);
+      font-size: 12px;
+      color: var(--color-on-surface-variant);
+    }
+    .sb-key-pill .dot { width: 8px; height: 8px; border-radius: 50%; background: #c25450; }
+    .sb-key-pill.ok .dot { background: var(--color-secondary); }
+
+    /* =========================================================
+       View tabs
+       ========================================================= */
+    .view-tabs {
+      display: flex;
+      gap: 4px;
+      padding: 12px 32px 0;
+      background: var(--color-surface);
+      border-bottom: 1px solid color-mix(in srgb, var(--color-outline-variant) 20%, transparent);
+      justify-content: center;
+    }
+    .view-tabs button {
+      background: transparent;
+      border: none;
+      padding: 10px 20px;
+      font-family: var(--font-body);
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--color-on-surface-variant);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+      display: inline-flex; align-items: center; gap: 6px;
+    }
+    .view-tabs button.active {
+      color: var(--color-secondary);
+      border-bottom-color: var(--color-secondary);
+    }
+    .view-tabs button:hover:not(.active) { color: var(--color-on-surface); }
+
+    /* =========================================================
+       Main containers
+       ========================================================= */
+    main {
+      flex: 1;
+      overflow-y: auto;
+    }
+    .container {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 40px 32px 60px;
+    }
+    .container.wide {
+      max-width: 1280px;
+    }
+
+    /* =========================================================
+       Typography
+       ========================================================= */
+    h1, h2, h3, h4 { font-family: var(--font-headline); color: var(--color-primary); margin: 0; letter-spacing: -0.02em; }
+    h1 { font-size: 32px; font-weight: 800; }
+    h2 { font-size: 24px; font-weight: 800; }
+    h3 { font-size: 18px; font-weight: 700; }
+    h4 { font-size: 14px; font-weight: 700; }
+    p { margin: 0; color: var(--color-on-surface-variant); }
+    .label-eyebrow {
+      font-family: var(--font-body);
+      font-weight: 800;
+      font-size: 11px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--color-secondary);
+    }
+    .label-soft {
+      font-family: var(--font-body);
+      font-weight: 800;
+      font-size: 11px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--color-outline);
+    }
+
+    /* =========================================================
+       Inputs / buttons (matching sb-* patterns)
+       ========================================================= */
+    .sb-input, textarea.sb-input {
+      width: 100%;
+      border-radius: 12px;
+      border: 1px solid color-mix(in srgb, var(--color-outline-variant) 30%, transparent);
+      background: var(--color-surface-container-lowest);
+      padding: 12px 16px;
+      font-family: var(--font-body);
+      font-size: 16px;
+      color: var(--color-on-surface);
+      outline: none;
+      transition: border-color 0.12s, box-shadow 0.12s;
+    }
+    .sb-input::placeholder { color: color-mix(in srgb, var(--color-on-surface-variant) 60%, transparent); }
+    .sb-input:focus {
+      border-color: var(--color-secondary);
+      box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-secondary) 18%, transparent);
+    }
+    textarea.sb-input { resize: vertical; min-height: 56px; line-height: 1.45; }
+
+    .sb-btn-primary {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      padding: 12px 24px;
+      border-radius: 12px;
+      background: var(--color-secondary);
+      color: var(--color-on-secondary);
+      font-weight: 700;
+      font-size: 15px;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 6px 16px color-mix(in srgb, var(--color-secondary) 22%, transparent);
+      transition: opacity 0.12s, transform 0.06s;
+    }
+    .sb-btn-primary:hover { opacity: 0.95; }
+    .sb-btn-primary:active { transform: translateY(1px); }
+    .sb-btn-primary:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none; }
+
+    .sb-btn-dark {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      padding: 12px 24px;
+      border-radius: 12px;
+      background: var(--color-primary);
+      color: #ffffff;
+      font-weight: 600;
+      font-size: 15px;
+      border: none;
+      cursor: pointer;
+    }
+    .sb-btn-dark:hover { opacity: 0.9; }
+
+    .sb-btn-ghost {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      padding: 10px 16px;
+      border-radius: 12px;
+      background: var(--color-surface-container);
+      color: var(--color-on-surface);
+      font-weight: 600;
+      font-size: 14px;
+      border: 1px solid color-mix(in srgb, var(--color-outline-variant) 40%, transparent);
+      cursor: pointer;
+    }
+    .sb-btn-ghost:hover { background: var(--color-surface-container-high); }
+
+    /* =========================================================
+       Cards
+       ========================================================= */
+    .sb-card {
+      background: var(--color-surface-container-lowest);
+      border: 1px solid color-mix(in srgb, var(--color-outline-variant) 20%, transparent);
+      border-radius: 24px;
+      box-shadow: 0 20px 40px rgba(27, 27, 29, 0.05);
+      overflow: hidden;
+    }
+    .sb-card-header {
+      background: color-mix(in srgb, var(--color-surface-container-low) 80%, transparent);
+      border-bottom: 1px solid color-mix(in srgb, var(--color-outline-variant) 15%, transparent);
+      padding: 16px 24px;
+    }
+    .sb-card-body { padding: 24px 28px; }
+
+    /* =========================================================
+       Workshop view
+       ========================================================= */
+    .hero {
+      margin-bottom: 24px;
+    }
+    .hero h1 { margin-bottom: 8px; }
+    .hero p { font-size: 16px; }
+
+    /* Two-column workshop layout */
+    .workshop-grid {
+      display: grid;
+      grid-template-columns: 380px 1fr;
+      gap: 24px;
+      align-items: start;
+    }
+    @media (max-width: 980px) {
+      .workshop-grid { grid-template-columns: 1fr; }
+    }
+
+    .workshop-side {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .prompt-panel {
+      background: var(--color-surface-container-lowest);
+      border: 1px solid color-mix(in srgb, var(--color-outline-variant) 20%, transparent);
+      border-radius: 24px;
+      box-shadow: 0 20px 40px rgba(27, 27, 29, 0.05);
+      padding: 22px;
+      display: flex; flex-direction: column; gap: 14px;
+    }
+    .prompt-panel .panel-eyebrow {
+      display: flex; align-items: center; gap: 8px;
+    }
+    .prompt-panel textarea {
+      min-height: 132px;
+      font-size: 15px;
+    }
+    .prompt-panel .sb-btn-primary {
+      width: 100%;
+      padding: 14px 20px;
+      font-size: 15px;
+    }
+
+    .examples {
+      display: flex; flex-wrap: wrap; gap: 6px;
+    }
+    .examples .chip {
+      font-size: 12px;
+      padding: 5px 11px;
+      border-radius: 999px;
+      background: var(--color-surface-container);
+      border: 1px solid color-mix(in srgb, var(--color-outline-variant) 30%, transparent);
+      color: var(--color-on-surface-variant);
+      cursor: pointer;
+      transition: color 0.12s, border-color 0.12s;
+    }
+    .examples .chip:hover {
+      color: var(--color-secondary);
+      border-color: color-mix(in srgb, var(--color-secondary) 50%, transparent);
+    }
+
+    .viewport-card {
+      position: relative;
+      border-radius: 24px;
+      overflow: hidden;
+      background: var(--color-surface-container-low);
+      border: 1px solid color-mix(in srgb, var(--color-outline-variant) 20%, transparent);
+      box-shadow: 0 20px 40px rgba(27, 27, 29, 0.05);
+      height: 620px;
+    }
+    .viewport-card canvas { display: block; width: 100% !important; height: 100% !important; }
+    .viewport-empty {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      flex-direction: column; gap: 8px;
+      color: var(--color-on-surface-variant);
+      pointer-events: none;
+    }
+    .viewport-empty .material-symbols-outlined { font-size: 48px; opacity: 0.4; }
+    .viewport-empty p { font-size: 14px; }
+    .viewport-overlay-title {
+      position: absolute;
+      top: 16px; left: 20px;
+      background: color-mix(in srgb, var(--color-surface-container-lowest) 92%, transparent);
+      backdrop-filter: blur(8px);
+      border: 1px solid color-mix(in srgb, var(--color-outline-variant) 25%, transparent);
+      border-radius: 12px;
+      padding: 10px 14px;
+      font-size: 14px;
+      color: var(--color-on-surface);
+      max-width: 360px;
+    }
+    .viewport-overlay-title .meta {
+      color: var(--color-on-surface-variant);
+      font-size: 12px;
+      margin-top: 2px;
+    }
+    .viewport-hint {
+      position: absolute;
+      bottom: 16px; right: 20px;
+      font-size: 12px;
+      color: var(--color-on-surface-variant);
+      background: color-mix(in srgb, var(--color-surface-container-lowest) 92%, transparent);
+      backdrop-filter: blur(8px);
+      border: 1px solid color-mix(in srgb, var(--color-outline-variant) 25%, transparent);
+      border-radius: 999px;
+      padding: 6px 14px;
+    }
+
+    .next-step {
+      display: flex;
+      justify-content: stretch;
+    }
+    .next-step .sb-btn-primary { width: 100%; padding: 14px 24px; font-size: 15px; }
+
+    .status-line {
+      display: flex; align-items: center; gap: 8px;
+      padding: 10px 14px;
+      border-radius: 12px;
+      background: var(--color-surface-container-low);
+      font-size: 13px;
+      color: var(--color-on-surface-variant);
+      border-left: 3px solid var(--color-secondary);
+      font-family: var(--font-body);
+    }
+    .status-line.error {
+      border-left-color: #c25450;
+      color: #8a3531;
+      background: #fdecea;
+    }
+    .spinner {
+      display: inline-block;
+      width: 14px; height: 14px;
+      border: 2px solid color-mix(in srgb, var(--color-secondary) 25%, transparent);
+      border-top-color: var(--color-secondary);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* =========================================================
+       Build guide view (matches Step4Guide)
+       ========================================================= */
+    .guide-header {
+      display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between;
+      margin-bottom: 32px;
+    }
+    .guide-header h1 { font-size: 36px; font-weight: 800; }
+    .guide-header .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+    .what-you-need-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 32px;
+    }
+    @media (max-width: 720px) {
+      .what-you-need-grid { grid-template-columns: 1fr; gap: 24px; }
+    }
+    .ul-disc {
+      list-style: disc inside;
+      padding: 0; margin: 12px 0 0;
+    }
+    .ul-disc li {
+      color: var(--color-on-surface-variant);
+      padding: 4px 0 4px 4px;
+      line-height: 1.55;
+    }
+    .ul-disc li::marker { color: var(--color-secondary); }
+
+    /* Cut list table */
+    table.cuts {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+      margin-top: 12px;
+    }
+    table.cuts th, table.cuts td {
+      padding: 10px 12px;
+      text-align: left;
+      border-bottom: 1px solid color-mix(in srgb, var(--color-outline-variant) 18%, transparent);
+    }
+    table.cuts th {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--color-outline);
+    }
+    table.cuts td.qty {
+      color: var(--color-secondary);
+      font-weight: 700;
+      width: 60px;
+    }
+    table.cuts td.dim {
+      font-family: ui-monospace, "JetBrains Mono", monospace;
+      color: var(--color-on-surface);
+      font-size: 13px;
+    }
+
+    /* Steps */
+    .steps-section { margin-top: 48px; }
+    .steps-header {
+      display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 24px;
+    }
+    .steps-list {
+      list-style: none;
+      padding: 0; margin: 0;
+      display: flex; flex-direction: column; gap: 32px;
+    }
+    .step-item {
+      display: flex; gap: 20px;
+      padding-bottom: 32px;
+      border-bottom: 1px solid color-mix(in srgb, var(--color-outline-variant) 12%, transparent);
+    }
+    .step-item:last-child { border-bottom: none; }
+    .step-gutter {
+      display: flex; align-items: center; gap: 12px; flex-shrink: 0;
+    }
+    .sb-step-checkbox {
+      appearance: none; -webkit-appearance: none;
+      width: 22px; height: 22px;
+      border-radius: 4px;
+      border: 2px solid var(--color-outline-variant);
+      background: var(--color-surface-container-lowest);
+      cursor: pointer;
+      background-repeat: no-repeat; background-position: center; background-size: 14px;
+      transition: background-color 0.12s, border-color 0.12s;
+    }
+    .sb-step-checkbox:checked {
+      background-color: var(--color-secondary);
+      border-color: var(--color-secondary);
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='%23ffffff' stroke-width='3.25' stroke-linecap='round' stroke-linejoin='round' d='M6.25 12.25l3.75 3.75 8-8.25'/%3E%3C/svg%3E");
+    }
+    .step-num {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 44px; height: 44px;
+      border-radius: 50%;
+      background: var(--color-secondary);
+      color: var(--color-on-secondary);
+      font-weight: 700;
+      font-size: 14px;
+      box-shadow: 0 4px 10px color-mix(in srgb, var(--color-secondary) 25%, transparent);
+    }
+    .step-num.done {
+      background: var(--color-surface-variant);
+      color: var(--color-on-surface-variant);
+      box-shadow: none;
+    }
+    .step-body { flex: 1; min-width: 0; }
+    .step-body h3 { margin-bottom: 8px; }
+    .step-body h3.done { color: var(--color-on-surface-variant); }
+    .step-actions {
+      list-style: decimal;
+      padding-left: 22px;
+      margin: 8px 0 0;
+    }
+    .step-actions li {
+      padding: 4px 0 4px 4px;
+      color: var(--color-on-surface-variant);
+      line-height: 1.55;
+    }
+    .step-actions li::marker { color: var(--color-secondary); font-weight: 600; }
+    .pro-tip {
+      margin-top: 14px;
+      padding: 8px 0 8px 16px;
+      border-left: 4px solid color-mix(in srgb, var(--color-secondary) 40%, transparent);
+      font-size: 14px;
+      color: var(--color-on-surface);
+    }
+    .pro-tip strong { color: var(--color-secondary); font-weight: 600; }
+
+    /* Empty state for guide view */
+    .guide-empty {
+      text-align: center;
+      padding: 80px 20px;
+      color: var(--color-on-surface-variant);
+    }
+    .guide-empty .material-symbols-outlined { font-size: 64px; opacity: 0.3; }
+    .guide-empty h2 { margin-top: 16px; }
+    .guide-empty p { margin-top: 8px; font-size: 16px; }
+    .guide-empty button { margin-top: 24px; }
+
+    /* Section spacing */
+    .section { margin-top: 32px; }
+    .section:first-child { margin-top: 0; }
+
+    /* Modal (settings) */
+    .modal-backdrop {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.4);
+      z-index: 100;
+      display: flex; align-items: center; justify-content: center;
+      padding: 24px;
+    }
+    .modal-backdrop.hidden { display: none; }
+    .modal-card {
+      background: var(--color-surface);
+      border: 1px solid color-mix(in srgb, var(--color-outline-variant) 30%, transparent);
+      border-radius: 24px;
+      padding: 32px;
+      max-width: 520px; width: 100%;
+      box-shadow: 0 30px 80px rgba(0,0,0,0.3);
+    }
+    .modal-card h2 { margin-bottom: 8px; }
+    .modal-card p { margin-bottom: 16px; }
+    .modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; }
+
+    /* Hidden helper */
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+  <div class="app">
+
+    <header class="sb-header">
+      <div class="row">
+        <span class="sb-logo">SelfBuilt</span>
+        <span class="sb-tagline">AI-powered DIY build planner</span>
+        <div class="sb-spacer"></div>
+        <span class="sb-key-pill" id="key-pill"><span class="dot"></span><span id="key-pill-text">No API key</span></span>
+        <button class="sb-icon-btn" id="settings-btn" title="Settings">
+          <span class="material-symbols-outlined">settings</span>
+        </button>
+      </div>
+    </header>
+
+    <nav class="view-tabs">
+      <button class="active" data-view="workshop">
+        <span class="material-symbols-outlined" style="font-size: 18px;">view_in_ar</span>
+        Design workshop
+      </button>
+      <button data-view="guide">
+        <span class="material-symbols-outlined" style="font-size: 18px;">checklist</span>
+        Build guide
+      </button>
+    </nav>
+
+    <main>
+      <!-- ========================== WORKSHOP VIEW ========================== -->
+      <section id="view-workshop" class="container wide">
+        <div class="workshop-grid">
+
+          <!-- LEFT: prompt panel -->
+          <aside class="workshop-side">
+            <div class="prompt-panel">
+              <div class="panel-eyebrow">
+                <span class="label-eyebrow" id="panel-eyebrow">Design</span>
+              </div>
+              <h2 id="panel-title" style="font-size: 22px;">What would you like to build?</h2>
+              <p id="panel-subtitle" style="font-size: 14px;">Describe your project in a sentence or two. SelfBuilt will sketch it in 3D.</p>
+              <textarea class="sb-input" id="prompt-input" placeholder="e.g. A small TV stand, 36 inches wide and 22 tall, made of pine 2x4s with a 3/4 inch plywood top."></textarea>
+              <button class="sb-btn-primary" id="primary-btn">
+                <span class="material-symbols-outlined" id="primary-btn-icon" style="font-size: 18px;">auto_awesome</span>
+                <span id="primary-btn-label">Generate design</span>
+              </button>
+              <div class="examples" id="examples"></div>
+            </div>
+
+            <div id="status-line" class="status-line">Paste your Anthropic API key in the gear menu, then describe what you want to build.</div>
+
+            <div class="next-step hidden" id="next-step-row">
+              <button class="sb-btn-primary" id="goto-guide-btn">
+                View build guide
+                <span class="material-symbols-outlined" style="font-size: 18px;">arrow_forward</span>
+              </button>
+            </div>
+          </aside>
+
+          <!-- RIGHT: 3D viewport -->
+          <div class="viewport-card">
+            <canvas id="viewport"></canvas>
+            <div class="viewport-empty" id="viewport-empty">
+              <span class="material-symbols-outlined">view_in_ar</span>
+              <p>Your 3D model will appear here.</p>
+            </div>
+            <div class="viewport-overlay-title hidden" id="viewport-title">
+              <div id="proj-name">—</div>
+              <div class="meta" id="proj-meta">—</div>
+            </div>
+            <div class="viewport-hint">drag to orbit · scroll to zoom · right-click to pan</div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ========================== GUIDE VIEW ========================== -->
+      <section id="view-guide" class="container hidden">
+        <!-- Empty state -->
+        <div class="guide-empty" id="guide-empty">
+          <span class="material-symbols-outlined">checklist</span>
+          <h2>No build guide yet</h2>
+          <p>Generate a design in the workshop first and the guide will appear here.</p>
+          <button class="sb-btn-primary" onclick="window.__sbSwitchView('workshop')">Go to workshop</button>
+        </div>
+
+        <!-- Populated guide -->
+        <div id="guide-content" class="hidden">
+          <div class="guide-header">
+            <div>
+              <span class="label-eyebrow">Step 2 — Build</span>
+              <h1 id="guide-title" style="margin-top: 8px;">Builder guide</h1>
+              <p id="guide-description" style="margin-top: 8px; max-width: 640px;"></p>
+            </div>
+            <div class="actions">
+              <button class="sb-btn-ghost" onclick="window.__sbSwitchView('workshop')">
+                <span class="material-symbols-outlined" style="font-size: 18px;">arrow_back</span>
+                Back to workshop
+              </button>
+              <button class="sb-btn-ghost" id="print-btn">
+                <span class="material-symbols-outlined" style="font-size: 18px;">print</span>
+                Print guide
+              </button>
+            </div>
+          </div>
+
+          <!-- Cut list card -->
+          <div class="sb-card section">
+            <div class="sb-card-header"><span class="label-eyebrow">Cut list</span></div>
+            <div class="sb-card-body" id="cutlist-body"></div>
+          </div>
+
+          <!-- What you need card -->
+          <div class="sb-card section">
+            <div class="sb-card-header"><span class="label-eyebrow">What you need</span></div>
+            <div class="sb-card-body">
+              <div class="what-you-need-grid">
+                <div>
+                  <h4>Materials &amp; hardware</h4>
+                  <ul class="ul-disc" id="materials-list"></ul>
+                </div>
+                <div>
+                  <h4>Tools</h4>
+                  <ul class="ul-disc" id="tools-list"></ul>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Estimate -->
+          <div class="sb-card section">
+            <div class="sb-card-header"><span class="label-eyebrow">Time estimate</span></div>
+            <div class="sb-card-body" id="estimate-body"></div>
+          </div>
+
+          <!-- Steps -->
+          <div class="steps-section">
+            <div class="steps-header">
+              <span class="label-soft">Step-by-step instructions</span>
+              <span style="color: var(--color-on-surface-variant); font-size: 14px;" id="steps-progress"></span>
+            </div>
+            <ol class="steps-list" id="steps-list"></ol>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Settings modal -->
+  <div class="modal-backdrop hidden" id="settings-modal">
+    <div class="modal-card">
+      <h2>API key</h2>
+      <p>Paste your Anthropic API key. It stays in this browser only — nothing is sent to a server. Get a key at <a href="https://console.anthropic.com" target="_blank" style="color: var(--color-secondary);">console.anthropic.com</a>.</p>
+      <input type="password" class="sb-input" id="api-key-input" placeholder="sk-ant-..." />
+      <p style="margin-top: 12px; font-size: 12px;">Cost is roughly $0.03–$0.08 per design with Sonnet. $5 of credit lasts ~50–100 designs.</p>
+      <div class="modal-actions">
+        <button class="sb-btn-ghost" id="settings-cancel">Cancel</button>
+        <button class="sb-btn-primary" id="settings-save">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+    }
+  }
+  </script>
+
+  <script type="module">
+    import * as THREE from 'three';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+    /* ===========================================================
+       SelfBuilt Workshop — single-file design + guide spike
+
+       Architecture:
+         user prompt → Claude → JSON DSL
+                                 │
+              ┌──────────────────┼─────────────────────┐
+              ▼                  ▼                     ▼
+         3D viewport      cut list / BOM /       step-by-step
+         (three.js)       tools (deterministic)  guide (deterministic + LLM-augmentable)
+       =========================================================== */
+
+    /* ---------- LUMBER CATALOG ---------- */
+    const LUMBER = {
+      "2x2_pine":  { kind: "beam",  cross_in: [1.5, 1.5],  display: "2x2 pine" },
+      "2x4_pine":  { kind: "beam",  cross_in: [1.5, 3.5],  display: "2x4 pine" },
+      "2x6_pine":  { kind: "beam",  cross_in: [1.5, 5.5],  display: "2x6 pine" },
+      "2x8_pine":  { kind: "beam",  cross_in: [1.5, 7.25], display: "2x8 pine" },
+      "2x10_pine": { kind: "beam",  cross_in: [1.5, 9.25], display: "2x10 pine" },
+      "4x4_pine":  { kind: "beam",  cross_in: [3.5, 3.5],  display: "4x4 pine" },
+      "1x4_pine":  { kind: "beam",  cross_in: [0.75, 3.5], display: "1x4 pine" },
+      "1x6_pine":  { kind: "beam",  cross_in: [0.75, 5.5], display: "1x6 pine" },
+      "1x8_pine":  { kind: "beam",  cross_in: [0.75, 7.25],display: "1x8 pine" },
+      "1x12_pine": { kind: "beam",  cross_in: [0.75, 11.25], display: "1x12 pine" },
+      "plywood_3_4":  { kind: "sheet", thickness_in: 0.75,  display: "3/4\" plywood" },
+      "plywood_1_2":  { kind: "sheet", thickness_in: 0.5,   display: "1/2\" plywood" },
+      "plywood_1_4":  { kind: "sheet", thickness_in: 0.25,  display: "1/4\" plywood" },
+      "mdf_3_4":      { kind: "sheet", thickness_in: 0.75,  display: "3/4\" MDF" },
+      "osb_7_16":     { kind: "sheet", thickness_in: 0.4375,display: "7/16\" OSB" },
+      "dowel_1in":    { kind: "round", diameter_in: 1.0,    display: "1\" dowel" },
+      "dowel_3_4in":  { kind: "round", diameter_in: 0.75,   display: "3/4\" dowel" }
+    };
+
+    /* ---------- JOIN CATALOG ---------- */
+    const JOIN_METHODS = {
+      "pocket_screw":  { tools: ["pocket hole jig", "drill", "clamp"], min_per_join: 4,
+                         hardware: { item: "2-1/2\" pocket hole screws", per_qty: 1 } },
+      "wood_screw":    { tools: ["drill", "driver bits"],               min_per_join: 2,
+                         hardware: { item: "2-1/2\" wood screws", per_qty: 1 } },
+      "lag_bolt":      { tools: ["impact driver", "socket set", "drill"], min_per_join: 5,
+                         hardware: { item: "3/8\" x 4\" lag bolt + washer", per_qty: 1 } },
+      "carriage_bolt": { tools: ["drill", "socket wrench"],             min_per_join: 5,
+                         hardware: { item: "3/8\" x 4\" carriage bolt + nut + washer", per_qty: 1 } },
+      "dowel":         { tools: ["drill", "wood glue", "clamp"],        min_per_join: 6,
+                         hardware: { item: "3/8\" wooden dowel pin", per_qty: 1 } },
+      "biscuit":       { tools: ["biscuit joiner", "wood glue", "clamp"], min_per_join: 5,
+                         hardware: { item: "#20 biscuit", per_qty: 1 } },
+      "glue_only":     { tools: ["wood glue", "clamps"],                min_per_join: 3,
+                         hardware: null },
+      "nail":          { tools: ["finish nail gun (or hammer)"],        min_per_join: 1,
+                         hardware: { item: "2\" finish nails", per_qty: 1 } },
+      "dado":          { tools: ["table saw with dado stack (or router with dado bit)", "wood glue", "clamps"],
+                         min_per_join: 8, hardware: null },
+      "hinge":         { tools: ["drill", "driver bits"],               min_per_join: 6,
+                         hardware: { item: "cabinet hinge", per_qty: 1 } }
+    };
+
+    /* ---------- SYSTEM PROMPT ---------- */
+    const SYSTEM_PROMPT = `You are SelfBuilt, an AI that designs DIY building projects as structured assemblies. You output ONLY a JSON object — no markdown, no commentary, no code fences.
+
+# Coordinate system
+- X axis = width  (left/right)
+- Y axis = HEIGHT (up — the floor is at Y=0)
+- Z axis = depth  (front/back)
+- All dimensions in inches.
+- Each part's "position_in" is the [x, y, z] of the bottom-left-front corner of its bounding box.
+- Most projects sit on the floor; legs and bases should start at Y=0.
+
+# Output schema (output exactly this shape)
+{
+  "name": "short project name",
+  "description": "one sentence",
+  "overall_dimensions_in": { "width": 36, "height": 24, "depth": 14 },
+  "parts": [
+    { "id": "leg_fl", "label": "Front-left leg", "lumber": "2x4_pine", "size_in": [1.5, 24, 3.5], "position_in": [0, 0, 0] }
+  ],
+  "joins": [
+    { "id": "top_to_legs", "method": "pocket_screw", "from": "top", "to": ["leg_fl","leg_fr","leg_bl","leg_br"], "qty_per_join": 2, "notes": "Drive screws down through the top into each leg." }
+  ],
+  "finishing": { "stain_or_paint": "Minwax Dark Walnut stain", "coats": 2, "sealer": "polyurethane satin" }
+}
+
+# Lumber catalog (use these EXACT id strings)
+Dimensional (you choose length): 2x2_pine 1.5x1.5 · 2x4_pine 1.5x3.5 · 2x6_pine 1.5x5.5 · 2x8_pine 1.5x7.25 · 2x10_pine 1.5x9.25 · 4x4_pine 3.5x3.5 · 1x4_pine 0.75x3.5 · 1x6_pine 0.75x5.5 · 1x8_pine 0.75x7.25 · 1x12_pine 0.75x11.25
+Sheet (you choose all 3 dims; one must equal thickness): plywood_3_4 (0.75) · plywood_1_2 (0.5) · plywood_1_4 (0.25) · mdf_3_4 (0.75) · osb_7_16 (0.4375)
+Round (cylindrical): dowel_1in (dia 1) · dowel_3_4in (dia 0.75)
+
+# size_in rules — CRITICAL
+- BEAMS: size_in = [size_x, size_y, size_z] in WORLD AXES. Two of three must equal the cross-section dims; the third is the cut length. A 24" 2x4 standing vertically: [1.5, 24, 3.5]. A 36" 2x4 lying flat horizontally along X: [36, 1.5, 3.5].
+- SHEETS: One of the three dims must equal thickness; other two are face dimensions. A 36"×14" plywood top sitting flat: [36, 0.75, 14].
+- ROUND: Two equal dims = diameter; third = length.
+
+# Join methods (exact strings): pocket_screw · wood_screw · lag_bolt · carriage_bolt · dowel · biscuit · glue_only · nail · dado · hinge
+
+# Construction rules
+1. Every part rests on the floor or another part — no floating geometry.
+2. Use real lumber sizes, not sketch dimensions.
+3. Default sizes when not specified: side table 18×18×22h, TV stand 48×16×24h, coffee table 42×22×18h, bookshelf 30×12×60h, outdoor table 36×36×29h.
+4. Symmetric assemblies have identical size_in for matching parts.
+5. Generate at least one "joins" entry per connection.
+6. Don't include hardware as parts — it's implied by joins.
+
+# Permitting / safety guard
+If the request needs permits or licensed trades (electrical past low-voltage decoration, plumbing into mains, structural framing of an inhabited space, gas, anything illegal), output:
+{ "error": "This project needs professional design or permits. SelfBuilt is for standalone DIY builds." }
+
+# Output ONLY the JSON object. No prose. No markdown.`;
+
+    /* ---------- STATE ---------- */
+    const state = {
+      apiKey: localStorage.getItem("anthropic_key") || "",
+      design: null,
+      meshes: [],
+      stepDone: [],
+      view: "workshop"
+    };
+
+    /* ---------- DOM HELPERS ---------- */
+    const $ = (id) => document.getElementById(id);
+
+    function setStatus(msg, kind = "") {
+      const el = $("status-line");
+      el.className = "status-line " + kind;
+      el.innerHTML = msg;
+    }
+
+    function updateKeyPill() {
+      const ok = state.apiKey.startsWith("sk-ant");
+      $("key-pill").classList.toggle("ok", ok);
+      $("key-pill-text").textContent = ok ? "API key set" : "No API key";
+    }
+    updateKeyPill();
+
+    /* ---------- VIEW SWITCHING ---------- */
+    window.__sbSwitchView = function(view) {
+      state.view = view;
+      $("view-workshop").classList.toggle("hidden", view !== "workshop");
+      $("view-guide").classList.toggle("hidden", view !== "guide");
+      document.querySelectorAll(".view-tabs button").forEach(b => {
+        b.classList.toggle("active", b.dataset.view === view);
+      });
+      if (view === "guide") renderGuide();
+      window.scrollTo(0, 0);
+    };
+    document.querySelectorAll(".view-tabs button").forEach(btn => {
+      btn.addEventListener("click", () => window.__sbSwitchView(btn.dataset.view));
+    });
+    $("goto-guide-btn").addEventListener("click", () => window.__sbSwitchView("guide"));
+
+    /* ---------- SETTINGS MODAL ---------- */
+    $("settings-btn").addEventListener("click", () => {
+      $("api-key-input").value = state.apiKey;
+      $("settings-modal").classList.remove("hidden");
+    });
+    $("settings-cancel").addEventListener("click", () => $("settings-modal").classList.add("hidden"));
+    $("settings-save").addEventListener("click", () => {
+      state.apiKey = $("api-key-input").value.trim();
+      localStorage.setItem("anthropic_key", state.apiKey);
+      updateKeyPill();
+      $("settings-modal").classList.add("hidden");
+      setStatus("API key saved. Describe what you want to build.", "");
+    });
+    $("settings-modal").addEventListener("click", (e) => {
+      if (e.target.id === "settings-modal") $("settings-modal").classList.add("hidden");
+    });
+
+    /* ---------- EXAMPLES ---------- */
+    const EXAMPLES = [
+      "A small side table, 18 inches square and 22 tall, pine 2x2 legs and a 3/4 plywood top.",
+      "A simple TV stand, 48 wide, 16 deep, 24 tall, with two open shelves below.",
+      "A 4-shelf bookshelf, 30 wide, 12 deep, 60 tall, pine.",
+      "An outdoor picnic table, 6 feet long, 30 inches wide, with attached benches.",
+      "A wall shelf, 36 inches wide, 8 inches deep, single 1x8 board.",
+      "A planter box, 24 inches square, 18 tall, cedar boards."
+    ];
+    EXAMPLES.forEach(ex => {
+      const chip = document.createElement("span");
+      chip.className = "chip";
+      chip.textContent = ex.length > 38 ? ex.slice(0, 36) + "…" : ex;
+      chip.title = ex;
+      chip.addEventListener("click", () => { $("prompt-input").value = ex; });
+      $("examples").appendChild(chip);
+    });
+
+    /* ---------- PANEL MODE (design vs iterate) ---------- */
+    function setPanelMode(mode) {
+      // mode: "design" | "iterate"
+      if (mode === "iterate") {
+        $("panel-eyebrow").textContent = "Iterate";
+        $("panel-title").textContent = "How would you like to iterate?";
+        $("panel-subtitle").textContent = "Tell SelfBuilt what to change in plain English. The 3D model and build guide update together.";
+        $("prompt-input").placeholder = "e.g. 'make it 6 inches taller', 'add a back panel of 1/4 plywood', 'swap legs for 4x4s'";
+        $("primary-btn-label").textContent = "Apply change";
+        $("primary-btn-icon").textContent = "tune";
+        $("examples").classList.add("hidden");
+      } else {
+        $("panel-eyebrow").textContent = "Design";
+        $("panel-title").textContent = "What would you like to build?";
+        $("panel-subtitle").textContent = "Describe your project in a sentence or two. SelfBuilt will sketch it in 3D.";
+        $("prompt-input").placeholder = "e.g. A small TV stand, 36 inches wide and 22 tall, made of pine 2x4s with a 3/4 inch plywood top.";
+        $("primary-btn-label").textContent = "Generate design";
+        $("primary-btn-icon").textContent = "auto_awesome";
+        $("examples").classList.remove("hidden");
+      }
+    }
+    setPanelMode("design");
+
+    /* ---------- THREE.JS SCENE ---------- */
+    const canvas = $("viewport");
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+    renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0xf6f3f5);
+    scene.fog = new THREE.Fog(0xf6f3f5, 250, 700);
+
+    const camera = new THREE.PerspectiveCamera(38, 1, 0.1, 2000);
+    camera.position.set(80, 60, 80);
+
+    const controls = new OrbitControls(camera, canvas);
+    controls.enableDamping = true;
+    controls.target.set(0, 12, 0);
+
+    // Lights — warm and soft to match the light theme
+    scene.add(new THREE.HemisphereLight(0xffffff, 0xd5d2cf, 0.7));
+    const sun = new THREE.DirectionalLight(0xfff1d6, 0.95);
+    sun.position.set(60, 90, 40);
+    sun.castShadow = true;
+    sun.shadow.mapSize.set(2048, 2048);
+    Object.assign(sun.shadow.camera, { left: -120, right: 120, top: 120, bottom: -120, near: 1, far: 320 });
+    sun.shadow.bias = -0.0005;
+    scene.add(sun);
+
+    // Ground (subtle warm gray)
+    const ground = new THREE.Mesh(
+      new THREE.PlaneGeometry(800, 800),
+      new THREE.MeshStandardMaterial({ color: 0xeae7e9, roughness: 0.95 })
+    );
+    ground.rotation.x = -Math.PI / 2;
+    ground.receiveShadow = true;
+    scene.add(ground);
+    // Faint grid
+    const grid = new THREE.GridHelper(800, 80, 0xc6c6cd, 0xd8d4d6);
+    grid.material.opacity = 0.5; grid.material.transparent = true;
+    grid.position.y = 0.02;
+    scene.add(grid);
+
+    function resize() {
+      const r = canvas.getBoundingClientRect();
+      if (r.width === 0 || r.height === 0) return;
+      renderer.setSize(r.width, r.height, false);
+      camera.aspect = r.width / r.height;
+      camera.updateProjectionMatrix();
+    }
+    new ResizeObserver(resize).observe(canvas);
+    resize();
+
+    (function loop() {
+      requestAnimationFrame(loop);
+      controls.update();
+      renderer.render(scene, camera);
+    })();
+
+    /* ---------- DSL → 3D ---------- */
+    function clearMeshes() {
+      state.meshes.forEach(m => {
+        scene.remove(m);
+        m.geometry.dispose();
+        if (Array.isArray(m.material)) m.material.forEach(mm => mm.dispose());
+        else m.material.dispose();
+      });
+      state.meshes = [];
+    }
+    const WOOD_TONES = [0xc8a579, 0xb5895c, 0xa67347, 0xc69b6f, 0x9a6f48, 0xd0ad7e];
+    function woodTone(part) {
+      let h = 0;
+      for (const c of (part.lumber || "")) h = (h * 31 + c.charCodeAt(0)) >>> 0;
+      return WOOD_TONES[h % WOOD_TONES.length];
+    }
+
+    function renderDesign(design) {
+      clearMeshes();
+      $("viewport-empty").classList.toggle("hidden", !!design);
+      $("viewport-title").classList.toggle("hidden", !design);
+      if (!design) return;
+      $("proj-name").textContent = design.name || "Untitled";
+      const d = design.overall_dimensions_in || {};
+      $("proj-meta").textContent = `${d.width || "?"}″W × ${d.depth || "?"}″D × ${d.height || "?"}″H · ${design.parts.length} parts`;
+
+      design.parts.forEach(p => {
+        const lumber = LUMBER[p.lumber];
+        if (!lumber) return;
+        const [sx, sy, sz] = p.size_in || [1,1,1];
+        const [px, py, pz] = p.position_in || [0,0,0];
+        let mesh;
+        if (lumber.kind === "round") {
+          const dims = [sx, sy, sz];
+          let lengthAxis = 1, lengthVal = sy, diameter = (sx + sz)/2;
+          if (Math.abs(sx - sz) < 0.01) { lengthAxis = 1; lengthVal = sy; diameter = (sx + sz)/2; }
+          else if (Math.abs(sx - sy) < 0.01) { lengthAxis = 2; lengthVal = sz; diameter = (sx + sy)/2; }
+          else if (Math.abs(sy - sz) < 0.01) { lengthAxis = 0; lengthVal = sx; diameter = (sy + sz)/2; }
+          mesh = new THREE.Mesh(
+            new THREE.CylinderGeometry(diameter/2, diameter/2, lengthVal, 24),
+            new THREE.MeshStandardMaterial({ color: woodTone(p), roughness: 0.7 })
+          );
+          if (lengthAxis === 0) mesh.rotation.z = Math.PI / 2;
+          else if (lengthAxis === 2) mesh.rotation.x = Math.PI / 2;
+          mesh.position.set(px + sx/2, py + sy/2, pz + sz/2);
+        } else {
+          mesh = new THREE.Mesh(
+            new THREE.BoxGeometry(sx, sy, sz),
+            new THREE.MeshStandardMaterial({ color: woodTone(p), roughness: 0.65 })
+          );
+          mesh.position.set(px + sx/2, py + sy/2, pz + sz/2);
+        }
+        const edges = new THREE.LineSegments(
+          new THREE.EdgesGeometry(mesh.geometry, 30),
+          new THREE.LineBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.18 })
+        );
+        mesh.add(edges);
+        mesh.castShadow = true;
+        mesh.receiveShadow = true;
+        scene.add(mesh);
+        state.meshes.push(mesh);
+      });
+
+      const dims = design.overall_dimensions_in || { width: 24, height: 24, depth: 24 };
+      controls.target.set(dims.width/2, dims.height/2, dims.depth/2);
+      const span = Math.max(dims.width, dims.height, dims.depth);
+      camera.position.set(span * 1.6 + 20, span * 1.2 + 20, span * 1.6 + 20);
+    }
+
+    /* ---------- DSL → BUILD GUIDE ---------- */
+    function cutLengthOf(part) {
+      const lumber = LUMBER[part.lumber];
+      const [sx, sy, sz] = part.size_in || [0,0,0];
+      if (!lumber) return Math.max(sx, sy, sz);
+      if (lumber.kind === "beam") {
+        const [a, b] = lumber.cross_in;
+        for (const d of [sx, sy, sz]) {
+          if (Math.abs(d - a) > 0.05 && Math.abs(d - b) > 0.05) return d;
+        }
+        return Math.max(sx, sy, sz);
+      }
+      if (lumber.kind === "sheet") {
+        return [sx, sy, sz].sort((a,b)=>a-b)[2];
+      }
+      if (lumber.kind === "round") {
+        for (const d of [sx, sy, sz]) {
+          if (Math.abs(d - lumber.diameter_in) > 0.05) return d;
+        }
+      }
+      return Math.max(sx, sy, sz);
+    }
+    function sheetFaceOf(part) {
+      const lumber = LUMBER[part.lumber];
+      if (lumber?.kind !== "sheet") return null;
+      const t = lumber.thickness_in;
+      const face = part.size_in.filter(d => Math.abs(d - t) > 0.05).sort((a,b)=>b-a);
+      return face;
+    }
+    function buildCutList(design) {
+      const groups = new Map();
+      design.parts.forEach(p => {
+        const lumber = LUMBER[p.lumber];
+        const key = p.lumber + "|" + [...p.size_in].sort((a,b)=>a-b).join("x");
+        if (groups.has(key)) {
+          groups.get(key).qty++;
+          groups.get(key).examples.push(p.label || p.id);
+        } else {
+          let dims;
+          if (lumber?.kind === "beam") dims = `${cutLengthOf(p).toFixed(2)}″`;
+          else if (lumber?.kind === "sheet") {
+            const f = sheetFaceOf(p);
+            dims = f ? `${f[0].toFixed(2)}″ × ${f[1].toFixed(2)}″` : "—";
+          } else if (lumber?.kind === "round") dims = `${cutLengthOf(p).toFixed(2)}″`;
+          else dims = "—";
+          groups.set(key, { lumber: p.lumber, display: lumber?.display || p.lumber, dims, qty: 1, examples: [p.label || p.id] });
+        }
+      });
+      return Array.from(groups.values()).sort((a,b) => a.display.localeCompare(b.display));
+    }
+    function buildBOM(design) {
+      const items = new Map();
+      (design.joins || []).forEach(j => {
+        const m = JOIN_METHODS[j.method];
+        if (!m || !m.hardware) return;
+        const conns = Array.isArray(j.to) ? j.to.length : 1;
+        const qty = (j.qty_per_join || 1) * conns * m.hardware.per_qty;
+        items.set(m.hardware.item, (items.get(m.hardware.item) || 0) + qty);
+      });
+      return Array.from(items.entries()).map(([item, qty]) => ({ item, qty })).sort((a,b) => b.qty - a.qty);
+    }
+    function buildToolList(design) {
+      const tools = new Set(["tape measure", "pencil", "safety glasses"]);
+      const hasBeams = design.parts.some(p => LUMBER[p.lumber]?.kind === "beam");
+      const hasSheets = design.parts.some(p => LUMBER[p.lumber]?.kind === "sheet");
+      if (hasBeams) tools.add("miter saw (or circular saw + speed square)");
+      if (hasSheets) tools.add("circular saw with straight edge (or table saw)");
+      tools.add(hasSheets ? "orbital sander with 120 + 220 grit" : "sanding block with 120 + 220 grit");
+      (design.joins || []).forEach(j => {
+        const m = JOIN_METHODS[j.method];
+        if (m) m.tools.forEach(t => tools.add(t));
+      });
+      if (design.finishing) {
+        tools.add("paint brush or foam applicator");
+        tools.add("clean rags");
+      }
+      return Array.from(tools).sort();
+    }
+    function buildMaterials(design) {
+      // Lumber → materials list, grouped
+      const lumberCounts = new Map();
+      design.parts.forEach(p => {
+        const lumber = LUMBER[p.lumber];
+        if (!lumber) return;
+        if (lumber.kind === "beam") {
+          // Track total linear feet by lumber type
+          const len = cutLengthOf(p);
+          const cur = lumberCounts.get(p.lumber) || { display: lumber.display, total_in: 0, count: 0 };
+          cur.total_in += len; cur.count++;
+          lumberCounts.set(p.lumber, cur);
+        } else if (lumber.kind === "sheet") {
+          const cur = lumberCounts.get(p.lumber) || { display: lumber.display, sheets: 0, count: 0 };
+          cur.count++;
+          lumberCounts.set(p.lumber, cur);
+        } else {
+          const cur = lumberCounts.get(p.lumber) || { display: lumber.display, count: 0 };
+          cur.count++;
+          lumberCounts.set(p.lumber, cur);
+        }
+      });
+      const materials = [];
+      lumberCounts.forEach((v, k) => {
+        const lumber = LUMBER[k];
+        if (lumber.kind === "beam") {
+          const ft = (v.total_in / 12).toFixed(1);
+          // Stud lengths come in 8', 10', 12' — buy a bit extra
+          const buyFt = Math.ceil((v.total_in / 12) * 1.1);
+          materials.push(`${v.display} — about ${ft} linear ft (buy ~${buyFt} ft, allowing for waste)`);
+        } else if (lumber.kind === "sheet") {
+          materials.push(`${v.display} — ${v.count} panel${v.count === 1 ? "" : "s"} (4'×8' sheets cut to size; one sheet may yield multiple parts)`);
+        } else {
+          materials.push(`${v.display} — ${v.count}`);
+        }
+      });
+      // Hardware
+      buildBOM(design).forEach(b => materials.push(`${b.qty}× ${b.item}`));
+      // Finishing
+      if (design.finishing) {
+        if (design.finishing.stain_or_paint) materials.push(design.finishing.stain_or_paint);
+        if (design.finishing.sealer) materials.push(design.finishing.sealer);
+      }
+      return materials;
+    }
+    function estimateTime(design) {
+      const cutMin = design.parts.length * 3;
+      const joinMin = (design.joins || []).reduce((sum, j) => {
+        const conns = Array.isArray(j.to) ? j.to.length : 1;
+        const m = JOIN_METHODS[j.method];
+        return sum + (m ? m.min_per_join : 3) * conns * (j.qty_per_join || 1);
+      }, 0);
+      const sandMin = design.parts.length * 4;
+      const finishMin = design.finishing ? (design.finishing.coats || 1) * 30 + 60 : 0;
+      return { total: cutMin + joinMin + sandMin + finishMin, cutMin, joinMin, sandMin, finishMin };
+    }
+    function fmtTime(min) {
+      if (min < 60) return `${Math.round(min)} min`;
+      const h = min / 60;
+      return h < 4 ? `${h.toFixed(1)} hours` : `${h.toFixed(1)} hours (~${(h/4).toFixed(1)} half-days of work)`;
+    }
+    function buildSteps(design) {
+      const steps = [];
+      steps.push({
+        title: "Lay out and verify materials",
+        actions: [
+          "Compare the cut list to what you have. If you're missing anything, buy or substitute now — it's much easier to plan around a missing piece than to discover it mid-build.",
+          "Set up your workspace with good light and at least 4 feet of clear floor around your saw."
+        ],
+        proTip: "Label every cut piece with masking tape and its part name from the cut list — saves hours when you're three boards deep."
+      });
+      steps.push({
+        title: "Make all cuts",
+        actions: [
+          "Cut every part to length per the cut list. Cut all the same-length pieces in one go using a stop block — they'll be guaranteed identical.",
+          "For sheet goods, cut the longest dimension first against a straight edge, then make perpendicular cuts."
+        ],
+        proTip: "Always measure twice, cut once. And keep your saw blade square — five minutes checking is cheaper than a re-do."
+      });
+      steps.push({
+        title: "Sand all parts to 120 grit",
+        actions: [
+          "Sand every part with 120 grit before assembly. It's much easier to reach all surfaces now than after it's screwed together.",
+          "Knock down any sharp edges with a couple of light passes."
+        ]
+      });
+
+      // One step per join, grouped by method (so you set up the jig once)
+      const byMethod = new Map();
+      (design.joins || []).forEach(j => {
+        if (!byMethod.has(j.method)) byMethod.set(j.method, []);
+        byMethod.get(j.method).push(j);
+      });
+      byMethod.forEach((joins, method) => {
+        const m = JOIN_METHODS[method];
+        const niceMethod = method.replace(/_/g, " ");
+        const setup = m ? `Set up your ${m.tools[0]}.` : "";
+        joins.forEach(j => {
+          const conns = Array.isArray(j.to) ? j.to.length : 1;
+          const total = conns * (j.qty_per_join || 1);
+          const targetList = Array.isArray(j.to) ? j.to.join(", ") : j.to;
+          steps.push({
+            title: `Join ${j.from} to ${Array.isArray(j.to) ? j.to.length + " parts" : j.to} with ${niceMethod}`,
+            actions: [
+              setup,
+              `Connect ${j.from} to ${targetList} using ${total} fastener${total === 1 ? "" : "s"} total.${j.notes ? " " + j.notes : ""}`,
+              "Check for square as you go — measure both diagonals; they should match."
+            ].filter(Boolean)
+          });
+        });
+      });
+
+      steps.push({
+        title: "Final sanding to 220 grit",
+        actions: [
+          "Sand all surfaces and edges with 220 grit.",
+          "Vacuum thoroughly, then wipe down with a tack cloth or damp microfiber to remove all dust before finishing."
+        ]
+      });
+      if (design.finishing) {
+        const f = design.finishing;
+        if (f.stain_or_paint) {
+          steps.push({
+            title: `Apply ${f.stain_or_paint}`,
+            actions: [
+              `Apply ${f.coats || 1} coat${(f.coats || 1) === 1 ? "" : "s"}, letting each dry per the can's instructions (usually 2–4 hours).`,
+              "Lightly sand with 320 grit between coats for a smoother finish."
+            ]
+          });
+        }
+        if (f.sealer) {
+          steps.push({
+            title: `Top coat with ${f.sealer}`,
+            actions: ["Apply a thin, even coat. Let cure 24 hours before any heavy use."]
+          });
+        }
+      }
+      steps.push({
+        title: "Cure and inspect",
+        actions: [
+          "Let everything cure overnight (or longer if humidity is high) before putting the build into regular use.",
+          "Walk around the finished project, check every joint, and tighten anything that loosened during finishing."
+        ]
+      });
+      return steps;
+    }
+
+    function renderGuide() {
+      const design = state.design;
+      $("guide-empty").classList.toggle("hidden", !!design);
+      $("guide-content").classList.toggle("hidden", !design);
+      if (!design) return;
+
+      // Title — "{Project} Builder guide"
+      const cleanName = (design.name || "Project").trim();
+      $("guide-title").textContent = `${cleanName} Builder guide`;
+      $("guide-description").textContent = design.description || "";
+
+      // Cut list
+      const cuts = buildCutList(design);
+      $("cutlist-body").innerHTML = `
+        <table class="cuts">
+          <thead><tr><th>Qty</th><th>Material</th><th>Cut to</th><th>Used as</th></tr></thead>
+          <tbody>
+            ${cuts.map(c => `<tr>
+              <td class="qty">${c.qty}×</td>
+              <td>${c.display}</td>
+              <td class="dim">${c.dims}</td>
+              <td style="color: var(--color-on-surface-variant); font-size: 13px;">${c.examples.slice(0,3).join(", ")}${c.examples.length > 3 ? ", …" : ""}</td>
+            </tr>`).join("")}
+          </tbody>
+        </table>
+      `;
+
+      // Materials + Tools
+      const materials = buildMaterials(design);
+      $("materials-list").innerHTML = materials.map(m => `<li>${m}</li>`).join("");
+      const tools = buildToolList(design);
+      $("tools-list").innerHTML = tools.map(t => `<li>${t}</li>`).join("");
+
+      // Estimate
+      const t = estimateTime(design);
+      $("estimate-body").innerHTML = `
+        <div style="display: flex; gap: 32px; flex-wrap: wrap; align-items: baseline;">
+          <div>
+            <div style="font-family: var(--font-headline); font-size: 32px; font-weight: 800; color: var(--color-secondary);">${fmtTime(t.total)}</div>
+            <p style="font-size: 14px; margin-top: 4px;">Approximate active build time, plus drying.</p>
+          </div>
+          <div style="font-size: 13px; color: var(--color-on-surface-variant); flex: 1; min-width: 220px;">
+            cutting ~${fmtTime(t.cutMin)} · joining ~${fmtTime(t.joinMin)} · sanding ~${fmtTime(t.sandMin)}${t.finishMin ? ` · finishing ~${fmtTime(t.finishMin)} (plus dry time)` : ""}
+          </div>
+        </div>
+      `;
+
+      // Steps with checkboxes
+      const steps = buildSteps(design);
+      if (state.stepDone.length !== steps.length) state.stepDone = new Array(steps.length).fill(false);
+      const renderProgress = () => {
+        const done = state.stepDone.filter(Boolean).length;
+        $("steps-progress").textContent = `${done} of ${steps.length} steps done`;
+      };
+      renderProgress();
+      $("steps-list").innerHTML = steps.map((s, i) => {
+        const checked = state.stepDone[i];
+        return `<li class="step-item">
+          <div class="step-gutter">
+            <input type="checkbox" class="sb-step-checkbox" data-idx="${i}" ${checked ? "checked" : ""} aria-label="Mark step ${i+1} done"/>
+            <span class="step-num ${checked ? "done" : ""}">${i+1}</span>
+          </div>
+          <div class="step-body">
+            <h3 class="${checked ? "done" : ""}">${s.title}</h3>
+            ${s.actions && s.actions.length ? `<ol class="step-actions">${s.actions.map(a => `<li>${a}</li>`).join("")}</ol>` : ""}
+            ${s.proTip ? `<p class="pro-tip"><strong>Pro tip:</strong> ${s.proTip}</p>` : ""}
+          </div>
+        </li>`;
+      }).join("");
+      $("steps-list").querySelectorAll(".sb-step-checkbox").forEach(cb => {
+        cb.addEventListener("change", () => {
+          const idx = parseInt(cb.dataset.idx);
+          state.stepDone[idx] = cb.checked;
+          renderGuide(); // re-render to update num color/strikethrough
+        });
+      });
+    }
+
+    /* ---------- CLAUDE API ---------- */
+    async function callClaude(userPrompt, baseDesign = null) {
+      if (!state.apiKey) throw new Error("Add your Anthropic API key in the gear menu (top right).");
+      const messages = [];
+      if (baseDesign) {
+        messages.push({
+          role: "user",
+          content: `Here is the current design as JSON:\n\n${JSON.stringify(baseDesign, null, 2)}\n\nNow apply this change and output the complete updated JSON: ${userPrompt}`
+        });
+      } else {
+        messages.push({ role: "user", content: userPrompt });
+      }
+      const res = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          "x-api-key": state.apiKey,
+          "anthropic-version": "2023-06-01",
+          "anthropic-dangerous-direct-browser-access": "true"
+        },
+        body: JSON.stringify({
+          model: "claude-sonnet-4-6",
+          max_tokens: 8000,
+          system: SYSTEM_PROMPT,
+          messages
+        })
+      });
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(`Claude API error ${res.status}: ${text.slice(0, 400)}`);
+      }
+      const data = await res.json();
+      const text = data.content?.[0]?.text || "";
+      let json = text.trim();
+      if (json.startsWith("```")) json = json.replace(/^```(?:json)?\s*/i, "").replace(/```\s*$/, "");
+      const firstBrace = json.indexOf("{");
+      if (firstBrace > 0) json = json.slice(firstBrace);
+      let design;
+      try { design = JSON.parse(json); }
+      catch { throw new Error("Couldn't parse Claude's response. Try a different prompt."); }
+      if (design.error) throw new Error(design.error);
+      validateDesign(design);
+      return design;
+    }
+    function validateDesign(d) {
+      if (!d || typeof d !== "object") throw new Error("Design is not an object.");
+      if (!Array.isArray(d.parts) || d.parts.length === 0) throw new Error("Design has no parts.");
+      d.parts.forEach((p, i) => {
+        if (!p.id) throw new Error(`Part ${i} has no id.`);
+        if (!p.lumber || !LUMBER[p.lumber]) throw new Error(`Part ${p.id}: unknown lumber "${p.lumber}".`);
+        if (!Array.isArray(p.size_in) || p.size_in.length !== 3) throw new Error(`Part ${p.id}: size_in must be [x,y,z].`);
+        if (!Array.isArray(p.position_in) || p.position_in.length !== 3) throw new Error(`Part ${p.id}: position_in must be [x,y,z].`);
+      });
+      const ids = new Set(d.parts.map(p => p.id));
+      (d.joins || []).forEach((j, i) => {
+        if (!j.method || !JOIN_METHODS[j.method]) throw new Error(`Join ${i}: unknown method "${j.method}".`);
+        const targets = Array.isArray(j.to) ? j.to : [j.to];
+        targets.concat([j.from]).forEach(id => {
+          if (id && !ids.has(id)) throw new Error(`Join ${i}: refers to missing part "${id}".`);
+        });
+      });
+    }
+
+    /* ---------- ACTIONS ---------- */
+    async function submitPrompt() {
+      const text = $("prompt-input").value.trim();
+      const isIterate = !!state.design;
+      if (!text) { setStatus(isIterate ? "Describe what to change." : "Type a description first.", "error"); return; }
+
+      const btn = $("primary-btn");
+      const labelEl = $("primary-btn-label");
+      const iconEl = $("primary-btn-icon");
+      const originalLabel = labelEl.textContent;
+      const originalIcon = iconEl.textContent;
+
+      btn.disabled = true;
+      labelEl.textContent = isIterate ? "Updating…" : "Designing…";
+      iconEl.outerHTML = `<span class="spinner" id="primary-btn-icon"></span>`;
+      setStatus(
+        isIterate
+          ? `<span class="spinner"></span>&nbsp; Applying your change…`
+          : `<span class="spinner"></span>&nbsp; Generating your design… (Sonnet usually takes 5–15 seconds)`
+      );
+
+      try {
+        const design = await callClaude(text, isIterate ? state.design : null);
+        state.design = design;
+        state.stepDone = []; // reset progress on new design
+        renderDesign(design);
+        $("prompt-input").value = "";
+        $("next-step-row").classList.remove("hidden");
+        setPanelMode("iterate");
+        setStatus(
+          isIterate
+            ? `Updated: <strong>${design.parts.length} parts</strong>, ${design.joins?.length || 0} joins.`
+            : `Design ready: <strong>${design.parts.length} parts</strong>, ${design.joins?.length || 0} joins. Iterate on the left, or jump to the build guide.`,
+          ""
+        );
+      } catch (e) {
+        setStatus(e.message || String(e), "error");
+      } finally {
+        btn.disabled = false;
+        // Restore icon span (it was replaced with spinner)
+        const spinner = document.getElementById("primary-btn-icon");
+        if (spinner) {
+          spinner.outerHTML = `<span class="material-symbols-outlined" id="primary-btn-icon" style="font-size: 18px;">${state.design ? "tune" : "auto_awesome"}</span>`;
+        }
+        labelEl.textContent = state.design ? "Apply change" : originalLabel;
+      }
+    }
+    $("primary-btn").addEventListener("click", submitPrompt);
+    $("prompt-input").addEventListener("keydown", e => { if ((e.metaKey || e.ctrlKey) && e.key === "Enter") submitPrompt(); });
+
+    $("print-btn").addEventListener("click", () => window.print());
+
+    // Open settings modal automatically if no key
+    if (!state.apiKey) {
+      setTimeout(() => $("settings-btn").click(), 400);
+    }
+  </script>
+</body>
+</html>

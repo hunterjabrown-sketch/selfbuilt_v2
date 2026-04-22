@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "concurrently \"npm run server\" \"vite\"",
+    "dev:workshop": "vite --open /selfbuilt-workshop.html",
     "server": "node server/index.js",
     "dev:vite": "vite",
     "build": "vite build",

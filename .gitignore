@@ -30,3 +30,6 @@ assets/reference/exports/*.zip
 *.sln
 *.sw?
 .vercel
+
+# R / RStudio (never commit)
+**/.Rhistory
