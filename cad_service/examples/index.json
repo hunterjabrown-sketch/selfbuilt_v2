@@ -1,0 +1,56 @@
+[
+  {
+    "id": "dbbb776b5a15",
+    "prompt": "A 4 foot tall quarter-pipe skate ramp, 4 feet wide",
+    "category": "ramp",
+    "created_at": 1776979505.6354618
+  },
+  {
+    "id": "36a490bb5f5b",
+    "prompt": "A simple two-shelf bookshelf, 900 mm tall, 600 mm wide, 300 mm deep",
+    "category": "shelf",
+    "created_at": 1776979505.636277
+  },
+  {
+    "id": "481ba9aebb35",
+    "prompt": "A cylindrical planter, 300 mm diameter, 400 mm tall, 12 mm wall",
+    "category": "planter",
+    "created_at": 1776979505.6369212
+  },
+  {
+    "id": "ca296af789ee",
+    "prompt": "A simple rectangular coffee table, 1100 x 600 x 450 mm, with four legs",
+    "category": "furniture",
+    "created_at": 1776979505.637581
+  },
+  {
+    "id": "116157ef9031",
+    "prompt": "A raised garden bed, 4 feet by 2 feet, 16 inches tall, open top and bottom",
+    "category": "planter",
+    "created_at": 1776979505.638141
+  },
+  {
+    "id": "5639d2b68b65",
+    "prompt": "A simple rectangular box, 200 mm long, 100 mm wide, 40 mm tall",
+    "category": "other",
+    "created_at": 1776980051.968124
+  },
+  {
+    "id": "be2f93c3b455",
+    "prompt": "A 3 foot quarter pipe skate ramp, 4 feet wide",
+    "category": "ramp",
+    "created_at": 1776980066.635214
+  },
+  {
+    "id": "530b630afecc",
+    "prompt": "A simple cube 150 mm on each side",
+    "category": "other",
+    "created_at": 1776980087.192916
+  },
+  {
+    "id": "400584a3b72b",
+    "prompt": "A simple cube 150 mm on each side",
+    "category": "other",
+    "created_at": 1776980111.897599
+  }
+]

@@ -4,6 +4,8 @@ import Logo from './Logo'
 import ProfileModal from './ProfileModal'
 
 export default function Header({
+  /** When true, only account / sign-in controls (for workshop-only shell). */
+  endContentOnly = false,
   onOpenSaved,
   currentView,
   hasSidebar,
@@ -27,27 +29,31 @@ export default function Header({
 
   return (
     <header className="flex min-h-16 shrink-0 items-center border-b border-outline-variant/20 bg-surface py-2 sm:py-0">
-      <div className="flex w-full items-center justify-between gap-3 px-4 sm:px-8">
-        <div className="flex min-w-0 items-center gap-3">
-          {user && onToggleSidebar && !sidebarOpen && (
-            <button
-              type="button"
-              onClick={onToggleSidebar}
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface"
-              aria-label="Open sidebar"
-            >
-              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
-            </button>
-          )}
-          <div className="flex min-w-0 flex-col gap-0 leading-tight sm:flex-row sm:items-baseline sm:gap-2.5 sm:leading-none">
-            <Logo className="text-xl sm:text-2xl" />
-            <p className="text-[11px] font-medium text-on-surface-variant sm:text-xs md:text-sm">AI-powered DIY build planner</p>
+      <div
+        className={`flex w-full items-center gap-3 px-4 sm:px-8 ${endContentOnly ? 'justify-end' : 'justify-between'}`}
+      >
+        {!endContentOnly && (
+          <div className="flex min-w-0 items-center gap-3">
+            {user && hasSidebar && onToggleSidebar && !sidebarOpen && (
+              <button
+                type="button"
+                onClick={onToggleSidebar}
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface"
+                aria-label="Open sidebar"
+              >
+                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              </button>
+            )}
+            <div className="flex min-w-0 flex-col gap-0 leading-tight sm:flex-row sm:items-baseline sm:gap-2.5 sm:leading-none">
+              <Logo className="text-xl sm:text-2xl" />
+              <p className="text-[11px] font-medium text-on-surface-variant sm:text-xs md:text-sm">AI-powered DIY build planner</p>
+            </div>
           </div>
-        </div>
+        )}
         <div className="flex shrink-0 items-center gap-2">
-          {user && !hasSidebar && (
+          {user && onOpenSaved && (
             <button
               type="button"
               onClick={onOpenSaved}

@@ -15,7 +15,7 @@ function money(n) {
   return `$${Number(n).toLocaleString('en-US')}`
 }
 
-export default function Sidebar({ selectedProjectId, onSelectProject, onDeleteProject, onClose, onNewProject, refreshTrigger, currentProject }) {
+export default function Sidebar({ selectedProjectId, onSelectProject, onDeleteProject, onClose, onNewProject, onOpenProfile, hideClose = false, refreshTrigger, currentProject }) {
   const { user, signOut } = useAuth()
   const [projects, setProjects] = useState([])
   const [loadingProjects, setLoadingProjects] = useState(false)
@@ -51,20 +51,22 @@ export default function Sidebar({ selectedProjectId, onSelectProject, onDeletePr
   const lifetimeHigh = savingsRows.reduce((sum, p) => sum + p.high, 0)
 
   return (
-    <aside className="flex h-full min-h-0 w-64 shrink-0 flex-col border-r border-outline-variant/20 bg-surface-container-low">
+    <aside className="flex h-full min-h-0 w-full shrink-0 flex-col border-r border-outline-variant/20 bg-surface-container-low">
       <div className="shrink-0 border-b border-outline-variant/20 px-4 pb-3 pt-4">
         <div className="flex items-center justify-between gap-3">
           <p className="min-w-0 flex-1 font-headline text-lg font-bold tracking-tight text-primary">Saved projects</p>
-          <button
-            type="button"
-            onClick={onClose}
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface"
-            aria-label="Close sidebar"
-          >
-            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
-          </button>
+          {!hideClose && (
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface"
+              aria-label="Close sidebar"
+            >
+              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+          )}
         </div>
         {onNewProject && (
           <button
@@ -162,13 +164,24 @@ export default function Sidebar({ selectedProjectId, onSelectProject, onDeletePr
               )}
             </div>
           )}
-          <button
-            type="button"
-            onClick={() => signOut()}
-            className="text-left text-xs font-medium text-on-surface-variant hover:text-secondary"
-          >
-            Sign out
-          </button>
+          <div className="flex items-center gap-3">
+            {onOpenProfile && (
+              <button
+                type="button"
+                onClick={onOpenProfile}
+                className="text-left text-xs font-medium text-on-surface-variant hover:text-secondary"
+              >
+                Profile
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={() => signOut()}
+              className="text-left text-xs font-medium text-on-surface-variant hover:text-secondary"
+            >
+              Sign out
+            </button>
+          </div>
         </div>
       </div>
     </aside>

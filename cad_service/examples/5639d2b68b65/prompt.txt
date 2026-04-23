@@ -1,0 +1,1 @@
+A simple rectangular box, 200 mm long, 100 mm wide, 40 mm tall

@@ -13,7 +13,7 @@ const EXPERIENCE_OPTIONS = [
 const defaultFields = { displayName: '', phone: '', experienceLevel: '' }
 
 export default function ProfileModal({ isOpen, onClose, onSaved, postTermsIntro = false }) {
-  const { user } = useAuth()
+  const { user, signOut } = useAuth()
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState(null)
@@ -174,6 +174,22 @@ export default function ProfileModal({ isOpen, onClose, onSaved, postTermsIntro 
                 className="sb-btn-primary flex-1 py-2.5 text-sm disabled:opacity-50"
               >
                 {saving ? 'Saving…' : 'Save'}
+              </button>
+            </div>
+            <div className="border-t border-outline-variant/15 pt-4">
+              <button
+                type="button"
+                onClick={async () => {
+                  try {
+                    await signOut()
+                    onClose()
+                  } catch (err) {
+                    setError(err?.message || 'Couldn’t sign out')
+                  }
+                }}
+                className="w-full rounded-xl border border-error/30 bg-error-container/40 px-4 py-2.5 text-sm font-semibold text-error hover:bg-error-container/60"
+              >
+                Sign out
               </button>
             </div>
           </form>

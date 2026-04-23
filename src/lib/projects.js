@@ -27,14 +27,21 @@ export function projectDisplayTitle(idea) {
   return text.charAt(0).toUpperCase() + text.slice(1)
 }
 
-/** Save a project for the given user. Storage is per-user; each account only sees their own. */
-export async function saveProject(uid, projectIdea, guide) {
+/** Save a project for the given user. Storage is per-user; each account only sees their own.
+ * Accepts an optional extras bag with `design` (the workshop DSL) and `thumbnailDataUrl`
+ * (a small PNG of the 3D viewport) so the Saved Projects list can render previews and
+ * a future "open in workshop" flow can restore the model.
+ */
+export async function saveProject(uid, projectIdea, guide, extras = {}) {
   if (!db) throw new Error('Firebase is not configured')
+  const { design, thumbnailDataUrl } = extras || {}
   const ref = await addDoc(collection(db, COLLECTION), {
     userId: uid,
     projectIdea,
     guide,
     ...(guide?.costEstimate ? { costEstimate: guide.costEstimate } : {}),
+    ...(design ? { design } : {}),
+    ...(thumbnailDataUrl ? { thumbnailDataUrl } : {}),
     createdAt: serverTimestamp(),
   })
   return ref.id

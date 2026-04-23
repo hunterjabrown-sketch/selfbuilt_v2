@@ -20,6 +20,7 @@ import { fetchTopVideoForStep } from '../lib/youtubeVideoSearch.js';
 import { ANTHROPIC_MODEL_GUIDE_GENERATION, ANTHROPIC_MODEL_PROJECT_CHAT } from '../lib/anthropicModels.js';
 import { omitLegacyPartialGuideFields, parseCompleteGuideFromModelText } from '../lib/guideApiContract.js';
 import { fetchCostEstimateForGuide } from '../lib/costEstimateHaiku.js';
+import { classifyIteration } from '../lib/iterationClassifierHaiku.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: join(__dirname, '..', '.env') });
@@ -196,6 +197,84 @@ app.post('/api/chat', async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: err.message || 'Chat failed' });
+  }
+});
+
+const CAD_SERVICE_URL = process.env.CAD_SERVICE_URL || 'http://127.0.0.1:3002';
+
+async function proxyCad(pathname, req, res) {
+  try {
+    const body = req.method === 'GET' ? undefined : JSON.stringify(req.body || {});
+    const response = await fetch(`${CAD_SERVICE_URL}${pathname}`, {
+      method: req.method,
+      headers: { 'Content-Type': 'application/json' },
+      body,
+    });
+    const text = await response.text();
+    res.status(response.status);
+    try { res.json(JSON.parse(text)); } catch { res.type('text/plain').send(text); }
+  } catch (err) {
+    console.error('[cad proxy]', err);
+    res.status(502).json({
+      ok: false,
+      error: `CAD service unreachable at ${CAD_SERVICE_URL}. Is it running? (${err.message})`,
+    });
+  }
+}
+
+app.post('/api/cad/generate', (req, res) => proxyCad('/cad/generate', req, res));
+app.post('/api/cad/execute',  (req, res) => proxyCad('/cad/execute',  req, res));
+app.get( '/api/cad/health',   (req, res) => proxyCad('/cad/health',   req, res));
+
+// DSL generation — routes browser Claude calls through the server so the API
+// key lives only in .env and is never exposed to the client.
+app.post('/api/dsl', async (req, res) => {
+  try {
+    if (!apiKey) return res.status(500).json({ error: 'ANTHROPIC_API_KEY is not set in .env' });
+    const { messages, systemPrompt } = req.body || {};
+    if (!Array.isArray(messages) || !messages.length) {
+      return res.status(400).json({ error: 'messages array is required' });
+    }
+    const message = await anthropic.messages.create({
+      model: 'claude-sonnet-4-6',
+      max_tokens: 8000,
+      system: systemPrompt || '',
+      messages,
+    });
+    const text = message.content.find((b) => b.type === 'text')?.text || '';
+    res.json({ text });
+  } catch (err) {
+    console.error('[api/dsl]', err);
+    res.status(500).json({ error: err.message || 'DSL generation failed' });
+  }
+});
+
+app.post('/api/classifyIteration', async (req, res) => {
+  try {
+    const { projectIdea, baseDesign, iterationMessage } = req.body || {};
+    if (!iterationMessage || typeof iterationMessage !== 'string') {
+      return res.status(400).json({ error: 'iterationMessage (string) is required' });
+    }
+    if (!apiKey) {
+      return res.status(500).json({ error: 'ANTHROPIC_API_KEY is not set in .env' });
+    }
+    const result = await classifyIteration(anthropic, {
+      projectIdea: projectIdea || '',
+      baseDesign: baseDesign || null,
+      iterationMessage,
+    });
+    if (!result) {
+      return res.status(200).json({
+        kind: 'structural',
+        requiresGuideRegen: true,
+        summary: 'Classifier unavailable; assuming guide may be stale.',
+        fallback: true,
+      });
+    }
+    return res.json(result);
+  } catch (err) {
+    console.error('[api/classify-iteration]', err);
+    return res.status(500).json({ error: err.message || 'classify-iteration failed' });
   }
 });
 

@@ -33,3 +33,8 @@ assets/reference/exports/*.zip
 
 # R / RStudio (never commit)
 **/.Rhistory
+
+# Python virtualenvs
+cad_service/venv/
+**/__pycache__/
+*.pyc
